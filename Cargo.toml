@@ -1,0 +1,5 @@
+[workspace]
+members = [
+  "esdt-nft-marketplace",
+  "esdt-nft-marketplace/abi",
+]
