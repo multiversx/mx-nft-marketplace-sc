@@ -39,6 +39,7 @@ pub trait EventsModule {
             &auction.auctioned_token.token_type,
             auction.auctioned_token.nonce,
             auction_id,
+            &auction.nr_auctioned_tokens,
             &auction.current_winner,
             &auction.current_bid,
         );
@@ -58,6 +59,7 @@ pub trait EventsModule {
             &auction.auctioned_token.token_type,
             auction.auctioned_token.nonce,
             auction_id,
+            &auction.nr_auctioned_tokens,
             &auction.original_owner,
         );
     }
@@ -96,6 +98,7 @@ pub trait EventsModule {
         #[indexed] auction_token_id: &TokenIdentifier,
         #[indexed] auctioned_token_nonce: u64,
         #[indexed] auction_id: u64,
+        #[indexed] nr_auctioned_tokens: &Self::BigUint,
         #[indexed] auction_winner: &Address,
         #[indexed] winning_bid_amount: &Self::BigUint,
     );
@@ -115,6 +118,7 @@ pub trait EventsModule {
         #[indexed] auction_token_id: &TokenIdentifier,
         #[indexed] auctioned_token_nonce: u64,
         #[indexed] auction_id: u64,
+        #[indexed] nr_auctioned_tokens: &Self::BigUint,
         #[indexed] seller: &Address,
     );
 }
