@@ -271,6 +271,10 @@ pub trait EsdtNftMarketplace:
             "Auction ID does not match the token"
         );
         require!(
+            auction.original_owner != caller,
+            "Can't buy your own token"
+        );
+        require!(
             payment_token == auction.payment_token.token_type
                 && payment_token_nonce == auction.payment_token.nonce,
             "Wrong token used as payment"
