@@ -29,6 +29,7 @@ pub trait EventsModule {
             &auction.auctioned_token.token_type,
             auction.auctioned_token.nonce,
             auction_id,
+            &auction.nr_auctioned_tokens,
             &auction.current_winner,
             &auction.current_bid,
         );
@@ -50,7 +51,9 @@ pub trait EventsModule {
             &auction.auctioned_token.token_type,
             auction.auctioned_token.nonce,
             auction_id,
+            &auction.nr_auctioned_tokens,
             &auction.current_winner,
+            &auction.min_bid,
         );
     }
 
@@ -88,6 +91,7 @@ pub trait EventsModule {
         #[indexed] auction_token_id: &TokenIdentifier,
         #[indexed] auctioned_token_nonce: u64,
         #[indexed] auction_id: u64,
+        #[indexed] nr_auctioned_tokens: &Self::BigUint,
         #[indexed] bidder: &Address,
         #[indexed] bid_amount: &Self::BigUint,
     );
@@ -109,7 +113,9 @@ pub trait EventsModule {
         #[indexed] auction_token_id: &TokenIdentifier,
         #[indexed] auctioned_token_nonce: u64,
         #[indexed] auction_id: u64,
+        #[indexed] nr_auctioned_tokens: &Self::BigUint,
         #[indexed] buyer: &Address,
+        #[indexed] bid_sft_amount: &Self::BigUint,
     );
 
     #[event("withdraw_event")]
