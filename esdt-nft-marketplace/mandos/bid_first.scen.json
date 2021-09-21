@@ -52,7 +52,7 @@
                         }
                     },
                     "storage": {
-                        "str:bidCutPerecentage": "1000",
+                        "str:bidCutPercentage": "1000",
                         "str:lastValidAuctionId": "1",
                         "str:auctionById|u64:1": {
                             "00-auctioned_token": "nested:str:NFT-123456|u64:1",

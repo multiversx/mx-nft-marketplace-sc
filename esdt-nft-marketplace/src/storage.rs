@@ -5,7 +5,7 @@ use crate::auction::*;
 #[elrond_wasm::module]
 pub trait StorageModule {
     #[view(getMarketplaceCutPercentage)]
-    #[storage_mapper("bidCutPerecentage")]
+    #[storage_mapper("bidCutPercentage")]
     fn bid_cut_percentage(&self) -> SingleValueMapper<Self::Storage, Self::BigUint>;
 
     #[storage_mapper("auctionById")]
