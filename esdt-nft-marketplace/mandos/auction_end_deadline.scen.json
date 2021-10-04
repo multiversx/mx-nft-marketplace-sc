@@ -1,5 +1,6 @@
 {
     "name": "end auction by reaching the deadline",
+    "traceGas" : true,
     "steps": [
         {
             "step": "externalSteps",
@@ -24,7 +25,7 @@
                 "arguments": [
                     "1"
                 ],
-                "gasLimit": "12,000,000",
+                "gasLimit": "20,000,000",
                 "gasPrice": "0"
             },
             "expect": {
