@@ -47,6 +47,11 @@ pub trait EsdtNftMarketplace:
         #[var_args] opt_sft_max_one_per_payment: OptionalArg<bool>,
         #[var_args] opt_start_time: OptionalArg<u64>,
     ) -> SCResult<u64> {
+        require!(
+            nft_amount >= Self::BigUint::from(NFT_AMOUNT),
+            "Must tranfer at least one"
+        );
+
         let current_time = self.blockchain().get_block_timestamp();
         let start_time = opt_start_time.into_option().unwrap_or(current_time);
         let sft_max_one_per_payment = opt_sft_max_one_per_payment
@@ -270,10 +275,7 @@ pub trait EsdtNftMarketplace:
                 && auction.auctioned_token.nonce == nft_nonce,
             "Auction ID does not match the token"
         );
-        require!(
-            auction.original_owner != caller,
-            "Can't buy your own token"
-        );
+        require!(auction.original_owner != caller, "Can't buy your own token");
         require!(
             payment_token == auction.payment_token.token_type
                 && payment_token_nonce == auction.payment_token.nonce,
@@ -344,11 +346,18 @@ pub trait EsdtNftMarketplace:
         Ok(self.auction_by_id(auction_id).get())
     }
 
-    fn calculate_cut_amount(&self, total_amount: &Self::BigUint, cut_percentage: &Self::BigUint) -> Self::BigUint {
+    fn calculate_cut_amount(
+        &self,
+        total_amount: &Self::BigUint,
+        cut_percentage: &Self::BigUint,
+    ) -> Self::BigUint {
         total_amount * cut_percentage / PERCENTAGE_TOTAL.into()
     }
 
-    fn calculate_winning_bid_split(&self, auction: &Auction<Self::BigUint>) -> BidSplitAmounts<Self::BigUint> {
+    fn calculate_winning_bid_split(
+        &self,
+        auction: &Auction<Self::BigUint>,
+    ) -> BidSplitAmounts<Self::BigUint> {
         let creator_royalties =
             self.calculate_cut_amount(&auction.current_bid, &auction.creator_royalties_percentage);
         let bid_cut_amount =
@@ -451,7 +460,11 @@ pub trait EsdtNftMarketplace:
         }
     }
 
-    fn get_nft_info(&self, nft_type: &TokenIdentifier, nft_nonce: u64) -> EsdtTokenData<Self::BigUint> {
+    fn get_nft_info(
+        &self,
+        nft_type: &TokenIdentifier,
+        nft_nonce: u64,
+    ) -> EsdtTokenData<Self::BigUint> {
         self.blockchain().get_esdt_token_data(
             &self.blockchain().get_sc_address(),
             nft_type,
