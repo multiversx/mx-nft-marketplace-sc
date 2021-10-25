@@ -1,5 +1,7 @@
 {
     "name": "deploy",
+    "traceGas" : true,
+    "gasSchedule": "v4",
     "steps": [
         {
             "step": "setState",

@@ -1,5 +1,7 @@
 {
     "name": "withdraw token",
+    "traceGas" : true,
+    "gasSchedule": "v4",
     "steps": [
         {
             "step": "externalSteps",

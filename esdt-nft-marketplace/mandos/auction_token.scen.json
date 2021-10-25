@@ -1,5 +1,7 @@
 {
     "name": "auction token",
+    "traceGas" : true,
+    "gasSchedule": "v4",
     "steps": [
         {
             "step": "externalSteps",

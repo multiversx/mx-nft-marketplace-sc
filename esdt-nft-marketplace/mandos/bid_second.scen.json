@@ -1,5 +1,7 @@
 {
     "name": "second bid",
+    "traceGas" : true,
+    "gasSchedule": "v4",
     "steps": [
         {
             "step": "externalSteps",

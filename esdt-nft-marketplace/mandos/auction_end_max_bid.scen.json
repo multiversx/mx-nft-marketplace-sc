@@ -1,5 +1,7 @@
 {
     "name": "end auction by reaching max bid",
+    "traceGas" : true,
+    "gasSchedule": "v4",
     "steps": [
         {
             "step": "externalSteps",

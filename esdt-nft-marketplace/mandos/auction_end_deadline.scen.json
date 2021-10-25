@@ -1,6 +1,5 @@
 {
     "name": "end auction by reaching the deadline",
-    "traceGas" : true,
     "steps": [
         {
             "step": "externalSteps",

@@ -130,7 +130,7 @@ pub trait EsdtNftMarketplace:
 
             original_owner: self.blockchain().get_caller(),
             current_bid: BigUint::zero(),
-            current_winner: self.types().address_zero(),
+            current_winner: ManagedAddress::zero(),
             marketplace_cut_percentage,
             creator_royalties_percentage,
         };
@@ -197,7 +197,7 @@ pub trait EsdtNftMarketplace:
         }
 
         // refund losing bid
-        if auction.current_winner != self.types().address_zero() {
+        if !auction.current_winner.is_zero() {
             self.transfer_esdt(
                 &auction.current_winner,
                 &auction.payment_token.token_type,
@@ -270,10 +270,7 @@ pub trait EsdtNftMarketplace:
                 && auction.auctioned_token.nonce == nft_nonce,
             "Auction ID does not match the token"
         );
-        require!(
-            auction.original_owner != caller,
-            "Can't buy your own token"
-        );
+        require!(auction.original_owner != caller, "Can't buy your own token");
         require!(
             payment_token == auction.payment_token.token_type
                 && payment_token_nonce == auction.payment_token.nonce,
@@ -348,7 +345,10 @@ pub trait EsdtNftMarketplace:
         total_amount * cut_percentage / PERCENTAGE_TOTAL
     }
 
-    fn calculate_winning_bid_split(&self, auction: &Auction<Self::Api>) -> BidSplitAmounts<Self::Api> {
+    fn calculate_winning_bid_split(
+        &self,
+        auction: &Auction<Self::Api>,
+    ) -> BidSplitAmounts<Self::Api> {
         let creator_royalties =
             self.calculate_cut_amount(&auction.current_bid, &auction.creator_royalties_percentage);
         let bid_cut_amount =
@@ -368,7 +368,7 @@ pub trait EsdtNftMarketplace:
         let nft_type = &auction.auctioned_token.token_type;
         let nft_nonce = auction.auctioned_token.nonce;
 
-        if auction.current_winner != self.types().address_zero() {
+        if !auction.current_winner.is_zero() {
             let nft_info = self.get_nft_info(nft_type, nft_nonce);
             let token_id = &auction.payment_token.token_type;
             let nonce = auction.payment_token.nonce;
@@ -444,7 +444,7 @@ pub trait EsdtNftMarketplace:
     }
 
     fn data_or_empty_if_sc(&self, dest: &ManagedAddress, data: &'static [u8]) -> &[u8] {
-        if self.blockchain().is_smart_contract(&dest.to_address()) {
+        if self.blockchain().is_smart_contract(dest) {
             &[]
         } else {
             data
