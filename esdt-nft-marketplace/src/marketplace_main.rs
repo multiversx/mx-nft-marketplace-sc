@@ -274,6 +274,7 @@ pub trait EsdtNftMarketplace:
         };
         let sft_total_value = &sft_buy_amount * &auction.min_bid;
 
+        require!(sft_buy_amount > 0, "Must by more than 0");
         require!(
             auction.auction_type == AuctionType::SftOnePerPayment,
             "Cannot buy SFT for this type of auction"
