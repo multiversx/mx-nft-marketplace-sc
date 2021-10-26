@@ -243,7 +243,7 @@ pub trait EsdtNftMarketplace:
             "Cannot end this type of auction"
         );
 
-        self.distribute_tokens_after_auction_end(&auction);
+        self.distribute_tokens_after_auction_end(&auction, None);
         self.auction_by_id(auction_id).clear();
 
         self.emit_end_auction_event(auction_id, auction);
@@ -251,6 +251,7 @@ pub trait EsdtNftMarketplace:
         Ok(())
     }
 
+    #[allow(clippy::too_many_arguments)]
     #[payable("*")]
     #[endpoint(buySft)]
     fn buy_sft(
@@ -261,10 +262,17 @@ pub trait EsdtNftMarketplace:
         auction_id: u64,
         nft_type: TokenIdentifier,
         nft_nonce: u64,
+        #[var_args] opt_sft_buy_amount: OptionalArg<Self::BigUint>,
     ) -> SCResult<()> {
         let mut auction = self.try_get_auction(auction_id)?;
         let current_time = self.blockchain().get_block_timestamp();
         let caller = self.blockchain().get_caller();
+
+        let sft_buy_amount = match opt_sft_buy_amount.into_option() {
+            Some(buy_amount) => buy_amount,
+            None => NFT_AMOUNT.into(),
+        };
+        let sft_total_value = &sft_buy_amount * &auction.min_bid;
 
         require!(
             auction.auction_type == AuctionType::SftOnePerPayment,
@@ -277,12 +285,16 @@ pub trait EsdtNftMarketplace:
         );
         require!(auction.original_owner != caller, "Can't buy your own token");
         require!(
+            sft_buy_amount <= auction.nr_auctioned_tokens,
+            "Not enough SFTs available"
+        );
+        require!(
             payment_token == auction.payment_token.token_type
                 && payment_token_nonce == auction.payment_token.nonce,
             "Wrong token used as payment"
         );
         require!(
-            auction.min_bid == payment_amount,
+            sft_total_value == payment_amount,
             "Wrong amount paid, must pay equal to the selling price"
         );
         require!(
@@ -296,16 +308,16 @@ pub trait EsdtNftMarketplace:
 
         auction.current_winner = caller;
         auction.current_bid = payment_amount;
-        self.distribute_tokens_after_auction_end(&auction);
+        self.distribute_tokens_after_auction_end(&auction, Some(&sft_buy_amount));
 
-        auction.nr_auctioned_tokens -= &NFT_AMOUNT.into();
+        auction.nr_auctioned_tokens -= &sft_buy_amount;
         if auction.nr_auctioned_tokens == 0 {
             self.auction_by_id(auction_id).clear();
         } else {
             self.auction_by_id(auction_id).set(&auction);
         }
 
-        self.emit_buy_sft_event(auction_id, auction);
+        self.emit_buy_sft_event(auction_id, auction, sft_buy_amount);
 
         Ok(())
     }
@@ -373,7 +385,11 @@ pub trait EsdtNftMarketplace:
         }
     }
 
-    fn distribute_tokens_after_auction_end(&self, auction: &Auction<Self::BigUint>) {
+    fn distribute_tokens_after_auction_end(
+        &self,
+        auction: &Auction<Self::BigUint>,
+        opt_sft_amount: Option<&Self::BigUint>,
+    ) {
         let nft_type = &auction.auctioned_token.token_type;
         let nft_nonce = auction.auctioned_token.nonce;
 
@@ -412,15 +428,20 @@ pub trait EsdtNftMarketplace:
             );
 
             // send NFT to auction winner
+            let nft_amount = Self::BigUint::from(NFT_AMOUNT);
             let nft_amount_to_send = match auction.auction_type {
-                AuctionType::Nft | AuctionType::SftOnePerPayment => NFT_AMOUNT.into(),
-                _ => auction.nr_auctioned_tokens.clone(),
+                AuctionType::Nft => &nft_amount,
+                AuctionType::SftOnePerPayment => match opt_sft_amount {
+                    Some(amt) => amt,
+                    None => &nft_amount,
+                },
+                _ => &auction.nr_auctioned_tokens,
             };
             self.transfer_esdt(
                 &auction.current_winner,
                 nft_type,
                 nft_nonce,
-                &nft_amount_to_send,
+                nft_amount_to_send,
                 b"bought token at auction",
             );
         } else {
