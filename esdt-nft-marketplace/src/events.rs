@@ -46,11 +46,17 @@ pub trait EventsModule {
         );
     }
 
-    fn emit_buy_sft_event(self, auction_id: u64, auction: Auction<Self::BigUint>) {
+    fn emit_buy_sft_event(
+        self,
+        auction_id: u64,
+        auction: Auction<Self::BigUint>,
+        nr_bought_tokens: Self::BigUint,
+    ) {
         self.buy_sft_event(
             &auction.auctioned_token.token_type,
             auction.auctioned_token.nonce,
             auction_id,
+            &nr_bought_tokens,
             &auction.current_winner,
             &auction.min_bid,
         );
@@ -112,6 +118,7 @@ pub trait EventsModule {
         #[indexed] auction_token_id: &TokenIdentifier,
         #[indexed] auctioned_token_nonce: u64,
         #[indexed] auction_id: u64,
+        #[indexed] nr_bought_tokens: &Self::BigUint,
         #[indexed] buyer: &Address,
         #[indexed] bid_sft_amount: &Self::BigUint,
     );
