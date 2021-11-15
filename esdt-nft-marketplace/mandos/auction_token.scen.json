@@ -1,5 +1,6 @@
 {
     "name": "auction token",
+    "gasSchedule": "v4",
     "steps": [
         {
             "step": "externalSteps",

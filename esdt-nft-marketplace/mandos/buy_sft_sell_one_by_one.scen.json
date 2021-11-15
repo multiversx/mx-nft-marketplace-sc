@@ -1,5 +1,6 @@
 {
     "name": "first bid",
+    "gasSchedule": "v4",
     "steps": [
         {
             "step": "externalSteps",

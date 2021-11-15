@@ -1,5 +1,6 @@
 {
     "name": "Test with a specific NFT that was causing problems",
+    "gasSchedule": "v4",
     "steps": [
         {
             "step": "externalSteps",

@@ -1,5 +1,6 @@
 {
     "name": "end auction by reaching max bid",
+    "gasSchedule": "v4",
     "steps": [
         {
             "step": "externalSteps",

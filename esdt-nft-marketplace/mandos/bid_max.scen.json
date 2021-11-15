@@ -1,5 +1,6 @@
 {
     "name": "max bid",
+    "gasSchedule": "v4",
     "steps": [
         {
             "step": "externalSteps",

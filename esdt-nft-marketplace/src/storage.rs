@@ -6,12 +6,12 @@ use crate::auction::*;
 pub trait StorageModule {
     #[view(getMarketplaceCutPercentage)]
     #[storage_mapper("bidCutPercentage")]
-    fn bid_cut_percentage(&self) -> SingleValueMapper<Self::Storage, Self::BigUint>;
+    fn bid_cut_percentage(&self) -> SingleValueMapper<BigUint>;
 
     #[storage_mapper("auctionById")]
-    fn auction_by_id(&self, auction_id: u64) -> SingleValueMapper<Self::Storage, Auction<Self::BigUint>>;
+    fn auction_by_id(&self, auction_id: u64) -> SingleValueMapper<Auction<Self::Api>>;
 
     #[view(getLastValidAuctionId)]
     #[storage_mapper("lastValidAuctionId")]
-    fn last_valid_auction_id(&self) -> SingleValueMapper<Self::Storage, u64>;
+    fn last_valid_auction_id(&self) -> SingleValueMapper<u64>;
 }

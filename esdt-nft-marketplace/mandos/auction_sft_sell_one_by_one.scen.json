@@ -1,5 +1,6 @@
 {
     "name": "auction sft sell all",
+    "gasSchedule": "v4",
     "steps": [
         {
             "step": "externalSteps",

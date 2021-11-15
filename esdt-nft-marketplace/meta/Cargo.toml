@@ -1,5 +1,5 @@
 [package]
-name = "esdt-nft-marketplace-abi"
+name = "esdt-nft-marketplace-meta"
 version = "0.0.0"
 authors = ["Dorin Iancu <dorin.iancu@elrond.com>"]
 edition = "2018"
@@ -9,7 +9,7 @@ publish = false
 path = ".."
 
 [dependencies.elrond-wasm]
-version = "0.18"
+version = "0.22.10"
 
 [dependencies.elrond-wasm-debug]
-version = "0.18"
+version = "0.22.10"
