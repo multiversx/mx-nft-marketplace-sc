@@ -1,5 +1,6 @@
 {
     "name": "invalid bids",
+    "gasSchedule": "v4",
     "steps": [
         {
             "step": "externalSteps",

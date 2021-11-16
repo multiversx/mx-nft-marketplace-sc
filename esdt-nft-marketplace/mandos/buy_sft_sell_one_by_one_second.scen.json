@@ -1,5 +1,6 @@
 {
     "name": "buy sft after end auction - only for sell ony by one type of auction",
+    "gasSchedule": "v4",
     "steps": [
         {
             "step": "externalSteps",

@@ -1,5 +1,6 @@
 {
     "name": "testing view functions after second bid",
+    "gasSchedule": "v4",
     "steps": [
         {
             "step": "externalSteps",

@@ -1,5 +1,6 @@
 {
     "name": "auction token with custom start time",
+    "gasSchedule": "v4",
     "steps": [
         {
             "step": "externalSteps",
