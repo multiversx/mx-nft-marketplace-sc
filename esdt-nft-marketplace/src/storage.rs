@@ -14,4 +14,13 @@ pub trait StorageModule {
     #[view(getLastValidAuctionId)]
     #[storage_mapper("lastValidAuctionId")]
     fn last_valid_auction_id(&self) -> SingleValueMapper<u64>;
+
+    #[view(getClaimableAmount)]
+    #[storage_mapper("claimableAmount")]
+    fn claimable_amount(
+        &self,
+        address: &ManagedAddress,
+        token_id: &TokenIdentifier,
+        token_nonce: u64,
+    ) -> SingleValueMapper<BigUint>;
 }

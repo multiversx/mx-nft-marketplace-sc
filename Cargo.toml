@@ -2,4 +2,6 @@
 members = [
   "esdt-nft-marketplace",
   "esdt-nft-marketplace/meta",
+  "seller-contract-mock",
+  "seller-contract-mock/meta",
 ]

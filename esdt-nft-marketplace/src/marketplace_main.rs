@@ -202,7 +202,7 @@ pub trait EsdtNftMarketplace:
 
         // refund losing bid
         if auction.current_winner != ManagedAddress::zero() {
-            self.transfer_esdt(
+            self.transfer_or_save_payment(
                 &auction.current_winner,
                 &auction.payment_token.token_type,
                 auction.payment_token.nonce,
@@ -341,11 +341,30 @@ pub trait EsdtNftMarketplace:
         let nft_type = &auction.auctioned_token.token_type;
         let nft_nonce = auction.auctioned_token.nonce;
         let nft_amount = &auction.nr_auctioned_tokens;
-        self.transfer_esdt(&caller, nft_type, nft_nonce, nft_amount, b"returned token");
+        self.transfer_or_save_payment(&caller, nft_type, nft_nonce, nft_amount, b"returned token");
 
         self.emit_withdraw_event(auction_id, auction);
 
         Ok(())
+    }
+
+    #[endpoint(claimTokens)]
+    fn claim_tokens(
+        &self,
+        token_id: TokenIdentifier,
+        token_nonce: u64,
+        claim_destination: ManagedAddress,
+    ) {
+        let caller = self.blockchain().get_caller();
+        let amount_mapper = self.claimable_amount(&caller, &token_id, token_nonce);
+        let amount = amount_mapper.get();
+
+        if amount > 0 {
+            amount_mapper.clear();
+
+            self.send()
+                .direct(&claim_destination, &token_id, token_nonce, &amount, &[]);
+        }
     }
 
     // private
@@ -397,7 +416,7 @@ pub trait EsdtNftMarketplace:
 
             // send part as cut for contract owner
             let owner = self.blockchain().get_owner_address();
-            self.transfer_esdt(
+            self.transfer_or_save_payment(
                 &owner,
                 token_id,
                 nonce,
@@ -406,7 +425,7 @@ pub trait EsdtNftMarketplace:
             );
 
             // send part as royalties to creator
-            self.transfer_esdt(
+            self.transfer_or_save_payment(
                 &nft_info.creator,
                 token_id,
                 nonce,
@@ -415,7 +434,7 @@ pub trait EsdtNftMarketplace:
             );
 
             // send rest of the bid to original owner
-            self.transfer_esdt(
+            self.transfer_or_save_payment(
                 &auction.original_owner,
                 token_id,
                 nonce,
@@ -433,7 +452,7 @@ pub trait EsdtNftMarketplace:
                 },
                 _ => &auction.nr_auctioned_tokens,
             };
-            self.transfer_esdt(
+            self.transfer_or_save_payment(
                 &auction.current_winner,
                 nft_type,
                 nft_nonce,
@@ -442,7 +461,7 @@ pub trait EsdtNftMarketplace:
             );
         } else {
             // return to original owner
-            self.transfer_esdt(
+            self.transfer_or_save_payment(
                 &auction.original_owner,
                 nft_type,
                 nft_nonce,
@@ -452,7 +471,7 @@ pub trait EsdtNftMarketplace:
         }
     }
 
-    fn transfer_esdt(
+    fn transfer_or_save_payment(
         &self,
         to: &ManagedAddress,
         token_id: &TokenIdentifier,
@@ -460,20 +479,11 @@ pub trait EsdtNftMarketplace:
         amount: &BigUint,
         data: &'static [u8],
     ) {
-        self.send().direct(
-            to,
-            token_id,
-            nonce,
-            amount,
-            self.data_or_empty_if_sc(to, data),
-        );
-    }
-
-    fn data_or_empty_if_sc(&self, dest: &ManagedAddress, data: &'static [u8]) -> &[u8] {
-        if self.blockchain().is_smart_contract(dest) {
-            &[]
+        if self.blockchain().is_smart_contract(to) {
+            self.claimable_amount(to, token_id, nonce)
+                .update(|amt| *amt += amount);
         } else {
-            data
+            self.send().direct(to, token_id, nonce, amount, data);
         }
     }
 
@@ -496,6 +506,4 @@ pub trait EsdtNftMarketplace:
 
         Ok(())
     }
-
-    // storage
 }
