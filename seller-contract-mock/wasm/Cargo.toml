@@ -1,12 +1,17 @@
 [package]
-name = "esdt-nft-marketplace-wasm"
+name = "seller-contract-mock-wasm"
 version = "0.0.0"
 authors = ["Dorin Iancu <dorin.iancu@elrond.com>"]
 edition = "2018"
 publish = false
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = [ "cdylib",]
+
+[workspace]
+members = [ ".",]
+
+[dev-dependencies]
 
 [profile.release]
 codegen-units = 1
@@ -15,7 +20,7 @@ lto = true
 debug = false
 panic = "abort"
 
-[dependencies.esdt-nft-marketplace]
+[dependencies.seller-contract-mock]
 path = ".."
 
 [dependencies.elrond-wasm-node]
@@ -23,7 +28,4 @@ version = "0.25.0"
 
 [dependencies.elrond-wasm-output]
 version = "0.25.0"
-features = ["wasm-output-mode"]
-
-[workspace]
-members = ["."]
+features = [ "wasm-output-mode",]

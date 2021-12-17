@@ -11,10 +11,12 @@ elrond_wasm_node::wasm_endpoints! {
         auctionToken
         bid
         buySft
+        claimTokens
         doesAuctionExist
         endAuction
         getAuctionType
         getAuctionedToken
+        getClaimableAmount
         getCurrentWinner
         getCurrentWinningBid
         getDeadline
