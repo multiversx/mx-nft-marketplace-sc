@@ -17,16 +17,16 @@ pub trait EsdtNftMarketplace:
     storage::StorageModule + views::ViewsModule + events::EventsModule
 {
     #[init]
-    fn init(&self, bid_cut_percentage: u64) -> SCResult<()> {
-        self.try_set_bid_cut_percentage(bid_cut_percentage)
+    fn init(&self, bid_cut_percentage: u64) {
+        self.try_set_bid_cut_percentage(bid_cut_percentage);
     }
 
     // endpoints - owner-only
 
+    #[only_owner]
     #[endpoint(setCutPercentage)]
-    fn set_percentage_cut(&self, new_cut_percentage: u64) -> SCResult<()> {
-        only_owner!(self, "Only owner may call this function!");
-        self.try_set_bid_cut_percentage(new_cut_percentage)
+    fn set_percentage_cut(&self, new_cut_percentage: u64) {
+        self.try_set_bid_cut_percentage(new_cut_percentage);
     }
 
     // endpoints
@@ -46,7 +46,7 @@ pub trait EsdtNftMarketplace:
         #[var_args] opt_accepted_payment_token_nonce: OptionalArg<u64>,
         #[var_args] opt_sft_max_one_per_payment: OptionalArg<bool>,
         #[var_args] opt_start_time: OptionalArg<u64>,
-    ) -> SCResult<u64> {
+    ) -> u64 {
         require!(
             nft_amount >= BigUint::from(NFT_AMOUNT),
             "Must tranfer at least one"
@@ -142,7 +142,7 @@ pub trait EsdtNftMarketplace:
 
         self.emit_auction_token_event(auction_id, auction);
 
-        Ok(auction_id)
+        auction_id
     }
 
     #[payable("*")]
@@ -155,8 +155,8 @@ pub trait EsdtNftMarketplace:
         auction_id: u64,
         nft_type: TokenIdentifier,
         nft_nonce: u64,
-    ) -> SCResult<()> {
-        let mut auction = self.try_get_auction(auction_id)?;
+    ) {
+        let mut auction = self.try_get_auction(auction_id);
         let caller = self.blockchain().get_caller();
         let current_time = self.blockchain().get_block_timestamp();
 
@@ -217,13 +217,11 @@ pub trait EsdtNftMarketplace:
         self.auction_by_id(auction_id).set(&auction);
 
         self.emit_bid_event(auction_id, auction);
-
-        Ok(())
     }
 
     #[endpoint(endAuction)]
-    fn end_auction(&self, auction_id: u64) -> SCResult<()> {
-        let auction = self.try_get_auction(auction_id)?;
+    fn end_auction(&self, auction_id: u64) {
+        let auction = self.try_get_auction(auction_id);
         let current_time = self.blockchain().get_block_timestamp();
 
         let deadline_reached = current_time > auction.deadline;
@@ -246,8 +244,6 @@ pub trait EsdtNftMarketplace:
         self.auction_by_id(auction_id).clear();
 
         self.emit_end_auction_event(auction_id, auction);
-
-        Ok(())
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -262,8 +258,8 @@ pub trait EsdtNftMarketplace:
         nft_type: TokenIdentifier,
         nft_nonce: u64,
         #[var_args] opt_sft_buy_amount: OptionalArg<BigUint>,
-    ) -> SCResult<()> {
-        let mut auction = self.try_get_auction(auction_id)?;
+    ) {
+        let mut auction = self.try_get_auction(auction_id);
         let current_time = self.blockchain().get_block_timestamp();
         let caller = self.blockchain().get_caller();
 
@@ -318,13 +314,11 @@ pub trait EsdtNftMarketplace:
         }
 
         self.emit_buy_sft_event(auction_id, auction, sft_buy_amount);
-
-        Ok(())
     }
 
     #[endpoint]
-    fn withdraw(&self, auction_id: u64) -> SCResult<()> {
-        let auction = self.try_get_auction(auction_id)?;
+    fn withdraw(&self, auction_id: u64) {
+        let auction = self.try_get_auction(auction_id);
         let caller = self.blockchain().get_caller();
 
         require!(
@@ -344,8 +338,6 @@ pub trait EsdtNftMarketplace:
         self.transfer_or_save_payment(&caller, nft_type, nft_nonce, nft_amount, b"returned token");
 
         self.emit_withdraw_event(auction_id, auction);
-
-        Ok(())
     }
 
     #[endpoint(claimTokens)]
@@ -369,12 +361,12 @@ pub trait EsdtNftMarketplace:
 
     // private
 
-    fn try_get_auction(&self, auction_id: u64) -> SCResult<Auction<Self::Api>> {
+    fn try_get_auction(&self, auction_id: u64) -> Auction<Self::Api> {
         require!(
             self.does_auction_exist(auction_id),
             "Auction does not exist"
         );
-        Ok(self.auction_by_id(auction_id).get())
+        self.auction_by_id(auction_id).get()
     }
 
     fn calculate_cut_amount(&self, total_amount: &BigUint, cut_percentage: &BigUint) -> BigUint {
@@ -495,7 +487,7 @@ pub trait EsdtNftMarketplace:
         )
     }
 
-    fn try_set_bid_cut_percentage(&self, new_cut_percentage: u64) -> SCResult<()> {
+    fn try_set_bid_cut_percentage(&self, new_cut_percentage: u64) {
         require!(
             new_cut_percentage > 0 && new_cut_percentage < PERCENTAGE_TOTAL,
             "Invalid percentage value, should be between 0 and 10,000"
@@ -503,7 +495,5 @@ pub trait EsdtNftMarketplace:
 
         self.bid_cut_percentage()
             .set(&BigUint::from(new_cut_percentage));
-
-        Ok(())
     }
 }
