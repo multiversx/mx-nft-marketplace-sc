@@ -42,7 +42,7 @@ fn auction_token(
 	max_bid: BigUint,
 	deadline: u64,
 	accepted_payment_token: TokenIdentifier,
-	#[var_args] opt_accepted_payment_token_nonce: OptionalArg<u64>,
+	#[var_args] opt_accepted_payment_token_nonce: OptionalValue<u64>,
 )
 ```
 

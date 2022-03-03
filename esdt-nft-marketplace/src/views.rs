@@ -13,11 +13,11 @@ pub trait ViewsModule: crate::storage::StorageModule {
     fn get_auctioned_token(
         &self,
         auction_id: u64,
-    ) -> OptionalResult<MultiResult3<TokenIdentifier, u64, BigUint>> {
+    ) -> OptionalValue<MultiValue3<TokenIdentifier, u64, BigUint>> {
         if self.does_auction_exist(auction_id) {
             let auction = self.auction_by_id(auction_id).get();
 
-            OptionalResult::Some(
+            OptionalValue::Some(
                 (
                     auction.auctioned_token.token_type,
                     auction.auctioned_token.nonce,
@@ -26,7 +26,7 @@ pub trait ViewsModule: crate::storage::StorageModule {
                     .into(),
             )
         } else {
-            OptionalResult::None
+            OptionalValue::None
         }
     }
 
@@ -43,22 +43,22 @@ pub trait ViewsModule: crate::storage::StorageModule {
     fn get_payment_token_for_auction(
         &self,
         auction_id: u64,
-    ) -> OptionalResult<MultiResult2<TokenIdentifier, u64>> {
+    ) -> OptionalValue<MultiValue2<TokenIdentifier, u64>> {
         if self.does_auction_exist(auction_id) {
             let esdt_token = self.auction_by_id(auction_id).get().payment_token;
 
-            OptionalResult::Some((esdt_token.token_type, esdt_token.nonce).into())
+            OptionalValue::Some((esdt_token.token_type, esdt_token.nonce).into())
         } else {
-            OptionalResult::None
+            OptionalValue::None
         }
     }
 
     #[view(getMinMaxBid)]
-    fn get_min_max_bid(&self, auction_id: u64) -> OptionalResult<MultiResult2<BigUint, BigUint>> {
+    fn get_min_max_bid(&self, auction_id: u64) -> OptionalValue<MultiValue2<BigUint, BigUint>> {
         if self.does_auction_exist(auction_id) {
             let auction = self.auction_by_id(auction_id).get();
 
-            OptionalResult::Some(
+            OptionalValue::Some(
                 (
                     auction.min_bid,
                     auction.max_bid.unwrap_or_else(|| BigUint::zero()),
@@ -66,61 +66,61 @@ pub trait ViewsModule: crate::storage::StorageModule {
                     .into(),
             )
         } else {
-            OptionalResult::None
+            OptionalValue::None
         }
     }
 
     #[view(getStartTime)]
-    fn get_start_time(&self, auction_id: u64) -> OptionalResult<u64> {
+    fn get_start_time(&self, auction_id: u64) -> OptionalValue<u64> {
         if self.does_auction_exist(auction_id) {
-            OptionalResult::Some(self.auction_by_id(auction_id).get().start_time)
+            OptionalValue::Some(self.auction_by_id(auction_id).get().start_time)
         } else {
-            OptionalResult::None
+            OptionalValue::None
         }
     }
 
     #[view(getDeadline)]
-    fn get_deadline(&self, auction_id: u64) -> OptionalResult<u64> {
+    fn get_deadline(&self, auction_id: u64) -> OptionalValue<u64> {
         if self.does_auction_exist(auction_id) {
-            OptionalResult::Some(self.auction_by_id(auction_id).get().deadline)
+            OptionalValue::Some(self.auction_by_id(auction_id).get().deadline)
         } else {
-            OptionalResult::None
+            OptionalValue::None
         }
     }
 
     #[view(getOriginalOwner)]
-    fn get_original_owner(&self, auction_id: u64) -> OptionalResult<ManagedAddress> {
+    fn get_original_owner(&self, auction_id: u64) -> OptionalValue<ManagedAddress> {
         if self.does_auction_exist(auction_id) {
-            OptionalResult::Some(self.auction_by_id(auction_id).get().original_owner)
+            OptionalValue::Some(self.auction_by_id(auction_id).get().original_owner)
         } else {
-            OptionalResult::None
+            OptionalValue::None
         }
     }
 
     #[view(getCurrentWinningBid)]
-    fn get_current_winning_bid(&self, auction_id: u64) -> OptionalResult<BigUint> {
+    fn get_current_winning_bid(&self, auction_id: u64) -> OptionalValue<BigUint> {
         if self.does_auction_exist(auction_id) {
-            OptionalResult::Some(self.auction_by_id(auction_id).get().current_bid)
+            OptionalValue::Some(self.auction_by_id(auction_id).get().current_bid)
         } else {
-            OptionalResult::None
+            OptionalValue::None
         }
     }
 
     #[view(getCurrentWinner)]
-    fn get_current_winner(&self, auction_id: u64) -> OptionalResult<ManagedAddress> {
+    fn get_current_winner(&self, auction_id: u64) -> OptionalValue<ManagedAddress> {
         if self.does_auction_exist(auction_id) {
-            OptionalResult::Some(self.auction_by_id(auction_id).get().current_winner)
+            OptionalValue::Some(self.auction_by_id(auction_id).get().current_winner)
         } else {
-            OptionalResult::None
+            OptionalValue::None
         }
     }
 
     #[view(getFullAuctionData)]
-    fn get_full_auction_data(&self, auction_id: u64) -> OptionalResult<Auction<Self::Api>> {
+    fn get_full_auction_data(&self, auction_id: u64) -> OptionalValue<Auction<Self::Api>> {
         if self.does_auction_exist(auction_id) {
-            OptionalResult::Some(self.auction_by_id(auction_id).get())
+            OptionalValue::Some(self.auction_by_id(auction_id).get())
         } else {
-            OptionalResult::None
+            OptionalValue::None
         }
     }
 }
