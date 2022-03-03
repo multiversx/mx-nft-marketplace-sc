@@ -43,9 +43,9 @@ pub trait EsdtNftMarketplace:
         max_bid: BigUint,
         deadline: u64,
         accepted_payment_token: TokenIdentifier,
-        #[var_args] opt_accepted_payment_token_nonce: OptionalArg<u64>,
-        #[var_args] opt_sft_max_one_per_payment: OptionalArg<bool>,
-        #[var_args] opt_start_time: OptionalArg<u64>,
+        #[var_args] opt_accepted_payment_token_nonce: OptionalValue<u64>,
+        #[var_args] opt_sft_max_one_per_payment: OptionalValue<bool>,
+        #[var_args] opt_start_time: OptionalValue<u64>,
     ) -> u64 {
         require!(
             nft_amount >= BigUint::from(NFT_AMOUNT),
@@ -54,8 +54,8 @@ pub trait EsdtNftMarketplace:
 
         let current_time = self.blockchain().get_block_timestamp();
         let start_time = match opt_start_time {
-            OptionalArg::Some(st) => st,
-            OptionalArg::None => current_time,
+            OptionalValue::Some(st) => st,
+            OptionalValue::None => current_time,
         };
         let sft_max_one_per_payment = opt_sft_max_one_per_payment
             .into_option()
@@ -257,15 +257,15 @@ pub trait EsdtNftMarketplace:
         auction_id: u64,
         nft_type: TokenIdentifier,
         nft_nonce: u64,
-        #[var_args] opt_sft_buy_amount: OptionalArg<BigUint>,
+        #[var_args] opt_sft_buy_amount: OptionalValue<BigUint>,
     ) {
         let mut auction = self.try_get_auction(auction_id);
         let current_time = self.blockchain().get_block_timestamp();
         let caller = self.blockchain().get_caller();
 
         let sft_buy_amount = match opt_sft_buy_amount {
-            OptionalArg::Some(amt) => amt,
-            OptionalArg::None => BigUint::from(NFT_AMOUNT),
+            OptionalValue::Some(amt) => amt,
+            OptionalValue::None => BigUint::from(NFT_AMOUNT),
         };
         let sft_total_value = &sft_buy_amount * &auction.min_bid;
 
