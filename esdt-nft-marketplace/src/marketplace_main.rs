@@ -69,7 +69,7 @@ pub trait EsdtNftMarketplace:
         }
 
         let opt_max_bid = if max_bid > 0u32 {
-            require!(min_bid <= max_bid, "Min bid can't higher than max bid");
+            require!(min_bid <= max_bid, "Min bid can't be higher than max bid");
 
             Some(max_bid)
         } else {
