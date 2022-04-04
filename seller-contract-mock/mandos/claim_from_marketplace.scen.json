@@ -220,6 +220,10 @@
             "expect": {
                 "status": "0",
                 "message": "",
+                "out": [
+                    "200",
+                    ""
+                ],
                 "gas": "*",
                 "refund": "*"
             }

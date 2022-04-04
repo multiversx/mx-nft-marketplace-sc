@@ -20,7 +20,7 @@ pub trait Adder {
 
         self.market_proxy(marketplace_sc_address)
             .claim_tokens(caller, token_nonce_pairs)
-            .execute_on_dest_context();
+            .execute_on_dest_context_ignore_result();
     }
 
     #[proxy]

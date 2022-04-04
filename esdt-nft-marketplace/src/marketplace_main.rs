@@ -345,7 +345,7 @@ pub trait EsdtNftMarketplace:
         &self,
         claim_destination: ManagedAddress,
         #[var_args] token_nonce_pairs: MultiValueEncoded<MultiValue2<TokenIdentifier, u64>>,
-    ) {
+    ) -> MultiValue2<BigUint, ManagedVec<EsdtTokenPayment<Self::Api>>> {
         let caller = self.blockchain().get_caller();
         let mut egld_payment_amount = BigUint::zero();
         let mut output_payments = ManagedVec::new();
@@ -374,6 +374,8 @@ pub trait EsdtNftMarketplace:
             self.send()
                 .direct_multi(&claim_destination, &output_payments, &[]);
         }
+
+        (egld_payment_amount, output_payments).into()
     }
 
     // private
