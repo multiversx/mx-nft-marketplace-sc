@@ -343,19 +343,36 @@ pub trait EsdtNftMarketplace:
     #[endpoint(claimTokens)]
     fn claim_tokens(
         &self,
-        token_id: TokenIdentifier,
-        token_nonce: u64,
         claim_destination: ManagedAddress,
+        #[var_args] token_nonce_pairs: MultiValueEncoded<MultiValue2<TokenIdentifier, u64>>,
     ) {
         let caller = self.blockchain().get_caller();
-        let amount_mapper = self.claimable_amount(&caller, &token_id, token_nonce);
-        let amount = amount_mapper.get();
+        let mut egld_payment_amount = BigUint::zero();
+        let mut output_payments = ManagedVec::new();
 
-        if amount > 0 {
-            amount_mapper.clear();
+        for pair in token_nonce_pairs {
+            let (token_id, token_nonce) = pair.into_tuple();
+            let amount_mapper = self.claimable_amount(&caller, &token_id, token_nonce);
+            let amount = amount_mapper.get();
 
+            if amount > 0 {
+                amount_mapper.clear();
+
+                if token_id.is_egld() {
+                    egld_payment_amount = amount;
+                } else {
+                    output_payments.push(EsdtTokenPayment::new(token_id, token_nonce, amount));
+                }
+            }
+        }
+
+        if egld_payment_amount > 0 {
             self.send()
-                .direct(&claim_destination, &token_id, token_nonce, &amount, &[]);
+                .direct_egld(&claim_destination, &egld_payment_amount, &[]);
+        }
+        if !output_payments.is_empty() {
+            self.send()
+                .direct_multi(&claim_destination, &output_payments, &[]);
         }
     }
 
