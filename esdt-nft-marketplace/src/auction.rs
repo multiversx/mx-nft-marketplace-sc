@@ -10,6 +10,7 @@ pub struct Auction<M: ManagedTypeApi> {
     pub payment_token: EsdtToken<M>,
     pub min_bid: BigUint<M>,
     pub max_bid: Option<BigUint<M>>,
+    pub min_bid_diff: BigUint<M>,
     pub start_time: u64,
     pub deadline: u64,
 
