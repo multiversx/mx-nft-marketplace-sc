@@ -207,13 +207,11 @@ pub trait EsdtNftMarketplace:
             );
         }
 
-        if &auction.min_bid_diff > &BigUint::zero() {
-            require!(
-                (&payment_amount - &auction.current_bid) >= auction.min_bid_diff,
-                "The difference from the last bid must be higher"
-            );
-        }
-        
+        require!(
+            (&payment_amount - &auction.current_bid) >= auction.min_bid_diff,
+            "The difference from the last bid must be higher"
+        );
+
         // refund losing bid
         if auction.current_winner != ManagedAddress::zero() {
             self.transfer_or_save_payment(
