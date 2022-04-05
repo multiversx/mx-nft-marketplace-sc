@@ -116,13 +116,14 @@
                             "04-payment_token": "nested:str:BUSD-123456|u64:0",
                             "05-min_bid": "biguint:0x01",
                             "06-max_bid": "u8:1|biguint:0x46",
-                            "07-start_time": "u64:123,000",
-                            "08-deadline": "u64:0x60C63784",
-                            "09-original_owner": "address:other_seller",
-                            "10-current_bid": "biguint:0",
-                            "11-current_winner": "0x0000000000000000000000000000000000000000000000000000000000000000",
-                            "12-marketplace_cut_percentage": "biguint:1000",
-                            "13-creator_royalties_percentage": "biguint:1000"
+                            "07-min_bid_diff": "biguint:0",
+                            "08-start_time": "u64:123,000",
+                            "09-deadline": "u64:0x60C63784",
+                            "10-original_owner": "address:other_seller",
+                            "11-current_bid": "biguint:0",
+                            "12-current_winner": "0x0000000000000000000000000000000000000000000000000000000000000000",
+                            "13-marketplace_cut_percentage": "biguint:1000",
+                            "14-creator_royalties_percentage": "biguint:1000"
                         }
                     },
                     "code": "file:../output/esdt-nft-marketplace.wasm"

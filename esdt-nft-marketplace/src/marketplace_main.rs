@@ -46,6 +46,7 @@ pub trait EsdtNftMarketplace:
         #[var_args] opt_accepted_payment_token_nonce: OptionalValue<u64>,
         #[var_args] opt_sft_max_one_per_payment: OptionalValue<bool>,
         #[var_args] opt_start_time: OptionalValue<u64>,
+        #[var_args] opt_min_bid_diff: OptionalValue<BigUint>,
     ) -> u64 {
         require!(
             nft_amount >= BigUint::from(NFT_AMOUNT),
@@ -95,6 +96,11 @@ pub trait EsdtNftMarketplace:
             "Marketplace cut plus royalties exceeds 100%"
         );
 
+        let min_bid_diff = match opt_min_bid_diff {
+            OptionalValue::Some(min_diff) => min_diff,
+            OptionalValue::None => BigUint::zero(),
+        };
+
         let accepted_payment_nft_nonce = if accepted_payment_token.is_egld() {
             0
         } else {
@@ -129,6 +135,7 @@ pub trait EsdtNftMarketplace:
             },
             min_bid,
             max_bid: opt_max_bid,
+            min_bid_diff,
             start_time,
             deadline,
 
@@ -199,6 +206,11 @@ pub trait EsdtNftMarketplace:
                 "Bid must be less than or equal to the max bid"
             );
         }
+
+        require!(
+            (&payment_amount - &auction.current_bid) >= auction.min_bid_diff,
+            "The difference from the last bid must be higher"
+        );
 
         // refund losing bid
         if auction.current_winner != ManagedAddress::zero() {

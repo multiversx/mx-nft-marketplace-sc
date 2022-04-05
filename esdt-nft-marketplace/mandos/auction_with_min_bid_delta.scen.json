@@ -1,5 +1,5 @@
 {
-    "name": "auction token with custom start time",
+    "name": "auction token with custom min delta bid",
     "gasSchedule": "v4",
     "steps": [
         {
@@ -15,8 +15,8 @@
         },
         {
             "step": "scCall",
-            "txId": "auctionToken custom start time",
-            "comment": "arguments are: min_bid, max_bid, deadline, payment token. Nonce is skipped, since EGLD has no nonce. Last arg is start time",
+            "txId": "auctionToken custom min delta bid",
+            "comment": "arguments are: min_bid, max_bid, deadline, payment token. Nonce is skipped, since EGLD has no nonce. Last arg is min delta bid",
             "tx": {
                 "from": "address:seller",
                 "to": "sc:marketplace",
@@ -34,7 +34,8 @@
                     "str:EGLD",
                     "false",
                     "0",
-                    "123,333"
+                    "123,333",
+                    "150"
                 ],
                 "gasLimit": "20,000,000",
                 "gasPrice": "0"
@@ -97,7 +98,7 @@
                             "04-payment_token": "nested:str:EGLD|u64:0",
                             "05-min_bid": "biguint:100",
                             "06-max_bid": "u8:1|biguint:1000",
-                            "07-min_bid_diff": "biguint:0",
+                            "07-min_bid_diff": "biguint:150",
                             "08-start_time": "u64:123,333",
                             "09-deadline": "u64:123,456",
                             "10-original_owner": "address:seller",
@@ -113,8 +114,15 @@
             }
         },
         {
+            "step": "setState",
+            "comment": "set current block timestamp after start time",
+            "currentBlockInfo": {
+                "blockTimestamp": "123,444"
+            }
+        },
+        {
             "step": "scCall",
-            "txId": "bid before start time",
+            "txId": "bid a smaller amount that the min delta bid",
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
@@ -130,25 +138,18 @@
             },
             "expect": {
                 "status": "4",
-                "message": "str:Auction hasn't started yet",
+                "message": "str:The difference from the last bid must be higher",
                 "gas": "*",
                 "refund": "*"
             }
         },
         {
-            "step": "setState",
-            "comment": "set current block timestamp after start time",
-            "currentBlockInfo": {
-                "blockTimestamp": "123,444"
-            }
-        },
-        {
             "step": "scCall",
-            "txId": "bid after start time",
+            "txId": "bid a larger amount that the min delta bid",
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
-                "value": "100",
+                "value": "200",
                 "function": "bid",
                 "arguments": [
                     "1",
@@ -170,12 +171,12 @@
             "accounts": {
                 "address:first_bidder": {
                     "nonce": "2",
-                    "balance": "900",
+                    "balance": "800",
                     "storage": {}
                 },
                 "sc:marketplace": {
                     "nonce": "0",
-                    "balance": "100",
+                    "balance": "200",
                     "esdt": {
                         "str:NFT-123456": {
                             "instances": [
@@ -198,11 +199,11 @@
                             "04-payment_token": "nested:str:EGLD|u64:0",
                             "05-min_bid": "biguint:100",
                             "06-max_bid": "u8:1|biguint:1000",
-                            "07-min_bid_diff": "biguint:0",
+                            "07-min_bid_diff": "biguint:150",
                             "08-start_time": "u64:123,333",
                             "09-deadline": "u64:123,456",
                             "10-original_owner": "address:seller",
-                            "11-current_bid": "biguint:100",
+                            "11-current_bid": "biguint:200",
                             "12-current_winner": "address:first_bidder",
                             "13-marketplace_cut_percentage": "biguint:1000",
                             "14-creator_royalties_percentage": "biguint:2000"
