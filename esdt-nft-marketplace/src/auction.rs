@@ -29,7 +29,7 @@ pub enum AuctionType {
     SftOnePerPayment,
 }
 
-#[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, TypeAbi, Clone)]
+#[derive(ManagedVecItem, TopEncode, TopDecode, NestedEncode, NestedDecode, TypeAbi, Clone)]
 pub struct EsdtToken<M: ManagedTypeApi> {
     pub token_type: TokenIdentifier<M>,
     pub nonce: u64,
