@@ -1,5 +1,5 @@
 {
-    "name": "auction token with custom start time",
+    "name": "auction token with custom min delta bid",
     "gasSchedule": "v4",
     "steps": [
         {
@@ -15,8 +15,8 @@
         },
         {
             "step": "scCall",
-            "txId": "auctionToken custom start time",
-            "comment": "arguments are: min_bid, max_bid, deadline, payment token. Nonce is skipped, since EGLD has no nonce. Last arg is start time",
+            "txId": "auctionToken custom min delta bid",
+            "comment": "arguments are: min_bid, max_bid, deadline, payment token. Nonce is skipped, since EGLD has no nonce. Last arg is min delta bid",
             "tx": {
                 "from": "address:seller",
                 "to": "sc:marketplace",
