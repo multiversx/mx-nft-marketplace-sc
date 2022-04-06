@@ -43,10 +43,11 @@ pub trait EsdtNftMarketplace:
         max_bid: BigUint,
         deadline: u64,
         accepted_payment_token: TokenIdentifier,
-        #[var_args] opt_accepted_payment_token_nonce: OptionalValue<u64>,
-        #[var_args] opt_sft_max_one_per_payment: OptionalValue<bool>,
-        #[var_args] opt_start_time: OptionalValue<u64>,
         #[var_args] opt_min_bid_diff: OptionalValue<BigUint>,
+        #[var_args] opt_sft_max_one_per_payment: OptionalValue<bool>,
+        #[var_args] opt_accepted_payment_token_nonce: OptionalValue<u64>,
+        #[var_args] opt_start_time: OptionalValue<u64>,
+
     ) -> u64 {
         require!(
             nft_amount >= BigUint::from(NFT_AMOUNT),
@@ -55,6 +56,7 @@ pub trait EsdtNftMarketplace:
 
         let current_time = self.blockchain().get_block_timestamp();
         let start_time = match opt_start_time {
+            OptionalValue::Some(0) => current_time,
             OptionalValue::Some(st) => st,
             OptionalValue::None => current_time,
         };
