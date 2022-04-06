@@ -50,7 +50,7 @@ pub trait EsdtNftMarketplace:
 
     ) -> u64 {
         require!(
-            nft_amount >= BigUint::from(NFT_AMOUNT),
+            nft_amount >= NFT_AMOUNT,
             "Must tranfer at least one"
         );
 
@@ -114,7 +114,7 @@ pub trait EsdtNftMarketplace:
         let auction_id = self.last_valid_auction_id().get() + 1;
         self.last_valid_auction_id().set(&auction_id);
 
-        let auction_type = if nft_amount > BigUint::from(NFT_AMOUNT) {
+        let auction_type = if nft_amount > NFT_AMOUNT {
             match sft_max_one_per_payment {
                 true => AuctionType::SftOnePerPayment,
                 false => AuctionType::SftAll,
