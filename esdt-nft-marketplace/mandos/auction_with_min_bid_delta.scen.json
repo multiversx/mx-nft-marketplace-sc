@@ -16,7 +16,7 @@
         {
             "step": "scCall",
             "txId": "auctionToken custom min delta bid",
-            "comment": "arguments are: min_bid, max_bid, deadline, payment token. Nonce is skipped, since EGLD has no nonce. First var arg is",
+            "comment": "arguments are: min_bid, max_bid, deadline, payment token. Nonce is skipped, since EGLD has no nonce. First var arg is min bid delta",
             "tx": {
                 "from": "address:seller",
                 "to": "sc:marketplace",
