@@ -43,18 +43,20 @@ pub trait EsdtNftMarketplace:
         max_bid: BigUint,
         deadline: u64,
         accepted_payment_token: TokenIdentifier,
-        #[var_args] opt_accepted_payment_token_nonce: OptionalValue<u64>,
-        #[var_args] opt_sft_max_one_per_payment: OptionalValue<bool>,
-        #[var_args] opt_start_time: OptionalValue<u64>,
         #[var_args] opt_min_bid_diff: OptionalValue<BigUint>,
+        #[var_args] opt_sft_max_one_per_payment: OptionalValue<bool>,
+        #[var_args] opt_accepted_payment_token_nonce: OptionalValue<u64>,
+        #[var_args] opt_start_time: OptionalValue<u64>,
+
     ) -> u64 {
         require!(
-            nft_amount >= BigUint::from(NFT_AMOUNT),
+            nft_amount >= NFT_AMOUNT,
             "Must tranfer at least one"
         );
 
         let current_time = self.blockchain().get_block_timestamp();
         let start_time = match opt_start_time {
+            OptionalValue::Some(0) => current_time,
             OptionalValue::Some(st) => st,
             OptionalValue::None => current_time,
         };
@@ -112,7 +114,7 @@ pub trait EsdtNftMarketplace:
         let auction_id = self.last_valid_auction_id().get() + 1;
         self.last_valid_auction_id().set(&auction_id);
 
-        let auction_type = if nft_amount > BigUint::from(NFT_AMOUNT) {
+        let auction_type = if nft_amount > NFT_AMOUNT {
             match sft_max_one_per_payment {
                 true => AuctionType::SftOnePerPayment,
                 false => AuctionType::SftAll,

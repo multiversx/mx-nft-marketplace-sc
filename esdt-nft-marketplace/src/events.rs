@@ -14,7 +14,7 @@ pub trait EventsModule {
             &auction.nr_auctioned_tokens,
             &auction.original_owner,
             &auction.min_bid,
-            &auction.max_bid.unwrap_or_else(|| BigUint::zero()),
+            &auction.max_bid.unwrap_or_else(BigUint::zero),
             auction.start_time,
             auction.deadline,
             auction.payment_token.token_type,

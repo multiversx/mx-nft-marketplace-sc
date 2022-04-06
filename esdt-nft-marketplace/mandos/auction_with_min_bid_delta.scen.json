@@ -16,7 +16,7 @@
         {
             "step": "scCall",
             "txId": "auctionToken custom min delta bid",
-            "comment": "arguments are: min_bid, max_bid, deadline, payment token. Nonce is skipped, since EGLD has no nonce. Last arg is min delta bid",
+            "comment": "arguments are: min_bid, max_bid, deadline, payment token. Nonce is skipped, since EGLD has no nonce. First var arg is min bid delta",
             "tx": {
                 "from": "address:seller",
                 "to": "sc:marketplace",
@@ -32,10 +32,10 @@
                     "1,000",
                     "123,456",
                     "str:EGLD",
+                    "150",
                     "false",
                     "0",
-                    "123,333",
-                    "150"
+                    "0"
                 ],
                 "gasLimit": "20,000,000",
                 "gasPrice": "0"
@@ -99,7 +99,7 @@
                             "05-min_bid": "biguint:100",
                             "06-max_bid": "u8:1|biguint:1000",
                             "07-min_bid_diff": "biguint:150",
-                            "08-start_time": "u64:123,333",
+                            "08-start_time": "u64:123,000",
                             "09-deadline": "u64:123,456",
                             "10-original_owner": "address:seller",
                             "11-current_bid": "biguint:0",
@@ -200,7 +200,7 @@
                             "05-min_bid": "biguint:100",
                             "06-max_bid": "u8:1|biguint:1000",
                             "07-min_bid_diff": "biguint:150",
-                            "08-start_time": "u64:123,333",
+                            "08-start_time": "u64:123,000",
                             "09-deadline": "u64:123,456",
                             "10-original_owner": "address:seller",
                             "11-current_bid": "biguint:200",
