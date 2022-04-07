@@ -205,11 +205,15 @@ pub trait EsdtNftMarketplace:
             );
         }
 
-        if auction.current_bid > BigUint::zero() {
-            require!(
-                (&payment_amount - &auction.current_bid) >= auction.min_bid_diff,
-                "The difference from the last bid must be higher"
-            );
+        if auction.current_bid > 0 {
+            if let Some(max_bid) = &auction.max_bid {
+                if &payment_amount < max_bid {
+                    require!(
+                        (&payment_amount - &auction.current_bid) >= auction.min_bid_diff,
+                        "The difference from the last bid must be higher"
+                    );
+                }
+            }
         }
 
         // refund losing bid
