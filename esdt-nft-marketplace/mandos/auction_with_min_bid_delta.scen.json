@@ -122,7 +122,7 @@
         },
         {
             "step": "scCall",
-            "txId": "bid a smaller amount that the min bid",
+            "txId": "bid a smaller amount than the min bid",
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
@@ -145,7 +145,7 @@
         },
         {
             "step": "scCall",
-            "txId": "bid a larger amount that the min delta bid",
+            "txId": "bid the first amount",
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
@@ -168,7 +168,7 @@
         },
         {
             "step": "scCall",
-            "txId": "bid a smaller amount that the min delta bid",
+            "txId": "bid a smaller amount than the min delta bid",
             "tx": {
                 "from": "address:second_bidder",
                 "to": "sc:marketplace",
@@ -191,7 +191,7 @@
         },
         {
             "step": "scCall",
-            "txId": "bid a higher amount that the min delta bid",
+            "txId": "bid a higher amount than the min delta bid",
             "tx": {
                 "from": "address:second_bidder",
                 "to": "sc:marketplace",
