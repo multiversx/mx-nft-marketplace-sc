@@ -149,7 +149,7 @@
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
-                "value": "200",
+                "value": "900",
                 "function": "bid",
                 "arguments": [
                     "1",
@@ -172,7 +172,7 @@
             "tx": {
                 "from": "address:second_bidder",
                 "to": "sc:marketplace",
-                "value": "250",
+                "value": "950",
                 "function": "bid",
                 "arguments": [
                     "1",
@@ -191,11 +191,11 @@
         },
         {
             "step": "scCall",
-            "txId": "bid a higher amount than the min delta bid",
+            "txId": "bid the max bid amount",
             "tx": {
                 "from": "address:second_bidder",
                 "to": "sc:marketplace",
-                "value": "350",
+                "value": "1000",
                 "function": "bid",
                 "arguments": [
                     "1",
@@ -222,12 +222,12 @@
                 },
                 "address:second_bidder": {
                     "nonce": "2",
-                    "balance": "650",
+                    "balance": "0",
                     "storage": {}
                 },
                 "sc:marketplace": {
                     "nonce": "0",
-                    "balance": "350",
+                    "balance": "1000",
                     "esdt": {
                         "str:NFT-123456": {
                             "instances": [
@@ -254,7 +254,7 @@
                             "08-start_time": "u64:123,000",
                             "09-deadline": "u64:123,456",
                             "10-original_owner": "address:seller",
-                            "11-current_bid": "biguint:350",
+                            "11-current_bid": "biguint:1000",
                             "12-current_winner": "address:second_bidder",
                             "13-marketplace_cut_percentage": "biguint:1000",
                             "14-creator_royalties_percentage": "biguint:2000"

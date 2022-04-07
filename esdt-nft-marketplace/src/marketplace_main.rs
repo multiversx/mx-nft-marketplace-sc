@@ -47,12 +47,8 @@ pub trait EsdtNftMarketplace:
         #[var_args] opt_sft_max_one_per_payment: OptionalValue<bool>,
         #[var_args] opt_accepted_payment_token_nonce: OptionalValue<u64>,
         #[var_args] opt_start_time: OptionalValue<u64>,
-
     ) -> u64 {
-        require!(
-            nft_amount >= NFT_AMOUNT,
-            "Must tranfer at least one"
-        );
+        require!(nft_amount >= NFT_AMOUNT, "Must tranfer at least one");
 
         let current_time = self.blockchain().get_block_timestamp();
         let start_time = match opt_start_time {
@@ -209,10 +205,16 @@ pub trait EsdtNftMarketplace:
             );
         }
 
-        require!(
-            (&payment_amount - &auction.current_bid) >= auction.min_bid_diff,
-            "The difference from the last bid must be higher"
-        );
+        if auction.current_bid > 0 {
+            if let Some(max_bid) = &auction.max_bid {
+                if &payment_amount < max_bid {
+                    require!(
+                        (&payment_amount - &auction.current_bid) >= auction.min_bid_diff,
+                        "The difference from the last bid must be higher"
+                    );
+                }
+            }
+        }
 
         // refund losing bid
         if auction.current_winner != ManagedAddress::zero() {
