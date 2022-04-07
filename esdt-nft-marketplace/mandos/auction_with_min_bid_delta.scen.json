@@ -122,11 +122,11 @@
         },
         {
             "step": "scCall",
-            "txId": "bid a smaller amount that the min delta bid",
+            "txId": "bid a smaller amount that the min bid",
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
-                "value": "100",
+                "value": "90",
                 "function": "bid",
                 "arguments": [
                     "1",
@@ -138,7 +138,7 @@
             },
             "expect": {
                 "status": "4",
-                "message": "str:The difference from the last bid must be higher",
+                "message": "str:Bid must be higher than or equal to the min bid",
                 "gas": "*",
                 "refund": "*"
             }
@@ -167,16 +167,67 @@
             }
         },
         {
+            "step": "scCall",
+            "txId": "bid a smaller amount that the min delta bid",
+            "tx": {
+                "from": "address:second_bidder",
+                "to": "sc:marketplace",
+                "value": "250",
+                "function": "bid",
+                "arguments": [
+                    "1",
+                    "str:NFT-123456",
+                    "1"
+                ],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "4",
+                "message": "str:The difference from the last bid must be higher",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "bid a higher amount that the min delta bid",
+            "tx": {
+                "from": "address:second_bidder",
+                "to": "sc:marketplace",
+                "value": "350",
+                "function": "bid",
+                "arguments": [
+                    "1",
+                    "str:NFT-123456",
+                    "1"
+                ],
+                "gasLimit": "10,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
             "step": "checkState",
             "accounts": {
                 "address:first_bidder": {
                     "nonce": "2",
-                    "balance": "800",
+                    "balance": "1000",
+                    "storage": {}
+                },
+                "address:second_bidder": {
+                    "nonce": "2",
+                    "balance": "650",
                     "storage": {}
                 },
                 "sc:marketplace": {
                     "nonce": "0",
-                    "balance": "200",
+                    "balance": "350",
                     "esdt": {
                         "str:NFT-123456": {
                             "instances": [
@@ -203,8 +254,8 @@
                             "08-start_time": "u64:123,000",
                             "09-deadline": "u64:123,456",
                             "10-original_owner": "address:seller",
-                            "11-current_bid": "biguint:200",
-                            "12-current_winner": "address:first_bidder",
+                            "11-current_bid": "biguint:350",
+                            "12-current_winner": "address:second_bidder",
                             "13-marketplace_cut_percentage": "biguint:1000",
                             "14-creator_royalties_percentage": "biguint:2000"
                         }
