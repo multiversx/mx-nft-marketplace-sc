@@ -1,26 +1,16 @@
-#![no_std]
-
 elrond_wasm::imports!();
 
-pub mod auction;
-use auction::*;
-
-mod events;
-mod storage;
-mod views;
+use crate::auction::*;
 
 const PERCENTAGE_TOTAL: u64 = 10_000; // 100%
 const NFT_AMOUNT: u32 = 1; // Token has to be unique to be considered NFT
 
-#[elrond_wasm::contract]
-pub trait EsdtNftMarketplace:
+use crate::{storage, views, events};
+
+#[elrond_wasm::module]
+pub trait MarketplaceAuctionModule:
     storage::StorageModule + views::ViewsModule + events::EventsModule
 {
-    #[init]
-    fn init(&self, bid_cut_percentage: u64) {
-        self.try_set_bid_cut_percentage(bid_cut_percentage);
-    }
-
     // endpoints - owner-only
 
     #[only_owner]
@@ -49,6 +39,11 @@ pub trait EsdtNftMarketplace:
         #[var_args] opt_start_time: OptionalValue<u64>,
     ) -> u64 {
         require!(nft_amount >= NFT_AMOUNT, "Must tranfer at least one");
+
+        // require!(
+        //     self.auctions_by_token(&nft_type, nft_nonce).is_empty(),
+        //     "An auction for this token already exists"
+        // );
 
         let current_time = self.blockchain().get_block_timestamp();
         let start_time = match opt_start_time {
@@ -121,7 +116,7 @@ pub trait EsdtNftMarketplace:
 
         let auction = Auction {
             auctioned_token: EsdtToken {
-                token_type: nft_type,
+                token_type: nft_type.clone(),
                 nonce: nft_nonce,
             },
             nr_auctioned_tokens: nft_amount,
@@ -144,6 +139,8 @@ pub trait EsdtNftMarketplace:
             creator_royalties_percentage,
         };
         self.auction_by_id(auction_id).set(&auction);
+        // self.auctions_by_token(&nft_type, nft_nonce)
+        //     .insert(auction_id);
 
         self.emit_auction_token_event(auction_id, auction);
 
@@ -325,6 +322,8 @@ pub trait EsdtNftMarketplace:
         auction.nr_auctioned_tokens -= &sft_buy_amount;
         if auction.nr_auctioned_tokens == 0 {
             self.auction_by_id(auction_id).clear();
+            // self.auctions_by_token(&nft_type, nft_nonce)
+            // .remove(&auction_id);
         } else {
             self.auction_by_id(auction_id).set(&auction);
         }
@@ -346,11 +345,13 @@ pub trait EsdtNftMarketplace:
             "Can't withdraw, NFT already has bids"
         );
 
-        self.auction_by_id(auction_id).clear();
-
         let nft_type = &auction.auctioned_token.token_type;
         let nft_nonce = auction.auctioned_token.nonce;
         let nft_amount = &auction.nr_auctioned_tokens;
+
+        self.auction_by_id(auction_id).clear();
+        // self.auctions_by_token(&nft_type, nft_nonce)
+        // .remove(&auction_id);
         self.transfer_or_save_payment(&caller, nft_type, nft_nonce, nft_amount, b"returned token");
 
         self.emit_withdraw_event(auction_id, auction);
@@ -394,38 +395,15 @@ pub trait EsdtNftMarketplace:
         (egld_payment_amount, output_payments).into()
     }
 
-    // private
+        // private
 
-    fn try_get_auction(&self, auction_id: u64) -> Auction<Self::Api> {
-        require!(
-            self.does_auction_exist(auction_id),
-            "Auction does not exist"
-        );
-        self.auction_by_id(auction_id).get()
-    }
-
-    fn calculate_cut_amount(&self, total_amount: &BigUint, cut_percentage: &BigUint) -> BigUint {
-        total_amount * cut_percentage / PERCENTAGE_TOTAL
-    }
-
-    fn calculate_winning_bid_split(
-        &self,
-        auction: &Auction<Self::Api>,
-    ) -> BidSplitAmounts<Self::Api> {
-        let creator_royalties =
-            self.calculate_cut_amount(&auction.current_bid, &auction.creator_royalties_percentage);
-        let bid_cut_amount =
-            self.calculate_cut_amount(&auction.current_bid, &auction.marketplace_cut_percentage);
-        let mut seller_amount_to_send = auction.current_bid.clone();
-        seller_amount_to_send -= &creator_royalties;
-        seller_amount_to_send -= &bid_cut_amount;
-
-        BidSplitAmounts {
-            creator: creator_royalties,
-            marketplace: bid_cut_amount,
-            seller: seller_amount_to_send,
+        fn try_get_auction(&self, auction_id: u64) -> Auction<Self::Api> {
+            require!(
+                self.does_auction_exist(auction_id),
+                "Auction does not exist"
+            );
+            self.auction_by_id(auction_id).get()
         }
-    }
 
     fn distribute_tokens_after_auction_end(
         &self,
@@ -530,5 +508,28 @@ pub trait EsdtNftMarketplace:
 
         self.bid_cut_percentage()
             .set(&BigUint::from(new_cut_percentage));
+    }
+
+    fn calculate_winning_bid_split(
+        &self,
+        auction: &Auction<Self::Api>,
+    ) -> BidSplitAmounts<Self::Api> {
+        let creator_royalties =
+            self.calculate_cut_amount(&auction.current_bid, &auction.creator_royalties_percentage);
+        let bid_cut_amount =
+            self.calculate_cut_amount(&auction.current_bid, &auction.marketplace_cut_percentage);
+        let mut seller_amount_to_send = auction.current_bid.clone();
+        seller_amount_to_send -= &creator_royalties;
+        seller_amount_to_send -= &bid_cut_amount;
+
+        BidSplitAmounts {
+            creator: creator_royalties,
+            marketplace: bid_cut_amount,
+            seller: seller_amount_to_send,
+        }
+    }
+
+    fn calculate_cut_amount(&self, total_amount: &BigUint, cut_percentage: &BigUint) -> BigUint {
+        total_amount * cut_percentage / PERCENTAGE_TOTAL
     }
 }

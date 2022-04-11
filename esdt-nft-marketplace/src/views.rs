@@ -1,12 +1,17 @@
 elrond_wasm::imports!();
 
-use crate::auction::*;
+use crate::{auction::{Auction, AuctionType}};
 
 #[elrond_wasm::module]
 pub trait ViewsModule: crate::storage::StorageModule {
     #[view(doesAuctionExist)]
     fn does_auction_exist(&self, auction_id: u64) -> bool {
         !self.auction_by_id(auction_id).is_empty()
+    }
+
+    #[view(doesOfferExist)]
+    fn does_offer_exist(&self, offer_id: u64) -> bool {
+        !self.offer_by_id(offer_id).is_empty()
     }
 
     #[view(getAuctionedToken)]

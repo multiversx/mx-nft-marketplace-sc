@@ -1,5 +1,7 @@
 #![no_std]
 
+use esdt_nft_marketplace::marketplace_main::ProxyTrait as market_proxy;
+
 elrond_wasm::imports!();
 
 #[elrond_wasm::derive::contract]
