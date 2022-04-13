@@ -113,8 +113,7 @@
                             "04-start_time": "u64:124,000",
                             "05-deadline": "u64:125,000",
                             "06-offer_owner": "address:first_bidder",
-                            "07-marketplace_cut_percentage": "biguint:1000",
-                            "08-creator_royalties_percentage": "biguint:0"
+                            "07-marketplace_cut_percentage": "biguint:1000"
                         }
                     },
                     "code": "file:../output/esdt-nft-marketplace.wasm"

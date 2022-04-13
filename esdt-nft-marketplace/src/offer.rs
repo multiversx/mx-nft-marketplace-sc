@@ -12,5 +12,4 @@ pub struct Offer<M: ManagedTypeApi> {
     pub deadline: u64,
     pub offer_owner: ManagedAddress<M>,
     pub marketplace_cut_percentage: BigUint<M>,
-    pub creator_royalties_percentage: BigUint<M>,
 }

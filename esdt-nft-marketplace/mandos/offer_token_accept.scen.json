@@ -44,7 +44,7 @@
             "accounts": {
                 "address:seller": {
                     "nonce": "1",
-                    "balance": "9",
+                    "balance": "7",
                     "esdt": {
                         "str:SFT-123456": {
                             "instances": [
@@ -79,6 +79,18 @@
                 "address:owner": {
                     "nonce": "1",
                     "balance": "1",
+                    "storage": {}
+                },
+                "address:nft_creator": {
+                    "nonce": "0",
+                    "balance": "2",
+                    "esdt": {
+                        "str:NFT-123456": {
+                            "roles": [
+                                "ESDTRoleNFTCreate"
+                            ]
+                        }
+                    },
                     "storage": {}
                 },
                 "sc:marketplace": {

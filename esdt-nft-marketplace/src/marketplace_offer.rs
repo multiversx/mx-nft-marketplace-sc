@@ -52,18 +52,11 @@ pub trait MarketplaceOfferModule:
         require!(deadline > current_time, "Deadline can't be in the past!");
 
         let marketplace_cut_percentage = self.bid_cut_percentage().get();
-        //TODO - tests fail
-        // let creator_royalties_percentage = self.get_nft_info(&nft_type, nft_nonce).royalties;
 
         //We can use this to check if an exact offer like this exists
         //It can be modified to check only if the caller has any active offers and so on
-        self.offer_exists(
-            &caller,
-            &nft_type,
-            nft_nonce,
-            &payment_token,
-        )
-        .set(&true);
+        self.offer_exists(&caller, &nft_type, nft_nonce, &payment_token)
+            .set(&true);
 
         let offer_id = self.last_valid_offer_id().get() + 1;
         self.last_valid_offer_id().set(&offer_id);
@@ -82,7 +75,6 @@ pub trait MarketplaceOfferModule:
             deadline,
             offer_owner: caller,
             marketplace_cut_percentage,
-            creator_royalties_percentage: BigUint::zero(),
         };
 
         self.offer_by_id(offer_id).set(&offer);
@@ -179,7 +171,8 @@ pub trait MarketplaceOfferModule:
             b"Token bought!",
         );
 
-        let offer_split_amounts = self.calculate_accepted_offer_split(&offer);
+        let offer_split_amounts =
+            self.calculate_accepted_offer_split(&offer, &creator_royalties_percentage);
         let marketplace_owner = self.blockchain().get_owner_address();
 
         // NFT marketplace revenue
@@ -235,9 +228,10 @@ pub trait MarketplaceOfferModule:
     fn calculate_accepted_offer_split(
         &self,
         offer: &Offer<Self::Api>,
+        creator_royalties_percentage: &BigUint,
     ) -> BidSplitAmounts<Self::Api> {
         let creator_royalties =
-            self.calculate_cut_amount(&offer.offer_price, &offer.creator_royalties_percentage);
+            self.calculate_cut_amount(&offer.offer_price, creator_royalties_percentage);
         let offer_cut_amount =
             self.calculate_cut_amount(&offer.offer_price, &offer.marketplace_cut_percentage);
         let mut seller_amount_to_send = offer.offer_price.clone();

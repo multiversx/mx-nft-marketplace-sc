@@ -116,7 +116,6 @@ pub trait EventsModule {
             offer.start_time,
             offer.deadline,
             &offer.marketplace_cut_percentage,
-            &offer.creator_royalties_percentage,
         )
     }
 
@@ -221,6 +220,5 @@ pub trait EventsModule {
         #[indexed] start_time: u64,
         #[indexed] deadline: u64,
         #[indexed] marketplace_cut_percentage: &BigUint,
-        #[indexed] creator_royalties_percentage: &BigUint,
     );
 }
