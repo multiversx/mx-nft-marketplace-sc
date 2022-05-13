@@ -36,18 +36,16 @@ pub trait EsdtNftMarketplace:
     #[allow(clippy::too_many_arguments)]
     fn auction_token(
         &self,
-        #[payment_token] nft_type: TokenIdentifier,
-        #[payment_nonce] nft_nonce: u64,
-        #[payment_amount] nft_amount: BigUint,
         min_bid: BigUint,
         max_bid: BigUint,
         deadline: u64,
         accepted_payment_token: TokenIdentifier,
-        #[var_args] opt_min_bid_diff: OptionalValue<BigUint>,
-        #[var_args] opt_sft_max_one_per_payment: OptionalValue<bool>,
-        #[var_args] opt_accepted_payment_token_nonce: OptionalValue<u64>,
-        #[var_args] opt_start_time: OptionalValue<u64>,
+        opt_min_bid_diff: OptionalValue<BigUint>,
+        opt_sft_max_one_per_payment: OptionalValue<bool>,
+        opt_accepted_payment_token_nonce: OptionalValue<u64>,
+        opt_start_time: OptionalValue<u64>,
     ) -> u64 {
+        let (nft_type, nft_nonce, nft_amount) = self.call_value().payment_as_tuple();
         require!(nft_amount >= NFT_AMOUNT, "Must tranfer at least one");
 
         let current_time = self.blockchain().get_block_timestamp();
@@ -152,15 +150,9 @@ pub trait EsdtNftMarketplace:
 
     #[payable("*")]
     #[endpoint]
-    fn bid(
-        &self,
-        #[payment_token] payment_token: TokenIdentifier,
-        #[payment_nonce] payment_token_nonce: u64,
-        #[payment_amount] payment_amount: BigUint,
-        auction_id: u64,
-        nft_type: TokenIdentifier,
-        nft_nonce: u64,
-    ) {
+    fn bid(&self, auction_id: u64, nft_type: TokenIdentifier, nft_nonce: u64) {
+        let (payment_token, payment_token_nonce, payment_amount) =
+            self.call_value().payment_as_tuple();
         let mut auction = self.try_get_auction(auction_id);
         let caller = self.blockchain().get_caller();
         let current_time = self.blockchain().get_block_timestamp();
@@ -262,19 +254,17 @@ pub trait EsdtNftMarketplace:
         self.emit_end_auction_event(auction_id, auction);
     }
 
-    #[allow(clippy::too_many_arguments)]
     #[payable("*")]
     #[endpoint(buySft)]
     fn buy_sft(
         &self,
-        #[payment_token] payment_token: TokenIdentifier,
-        #[payment_nonce] payment_token_nonce: u64,
-        #[payment_amount] payment_amount: BigUint,
         auction_id: u64,
         nft_type: TokenIdentifier,
         nft_nonce: u64,
-        #[var_args] opt_sft_buy_amount: OptionalValue<BigUint>,
+        opt_sft_buy_amount: OptionalValue<BigUint>,
     ) {
+        let (payment_token, payment_token_nonce, payment_amount) =
+            self.call_value().payment_as_tuple();
         let mut auction = self.try_get_auction(auction_id);
         let current_time = self.blockchain().get_block_timestamp();
         let caller = self.blockchain().get_caller();
@@ -360,7 +350,7 @@ pub trait EsdtNftMarketplace:
     fn claim_tokens(
         &self,
         claim_destination: ManagedAddress,
-        #[var_args] token_nonce_pairs: MultiValueEncoded<MultiValue2<TokenIdentifier, u64>>,
+        token_nonce_pairs: MultiValueEncoded<MultiValue2<TokenIdentifier, u64>>,
     ) -> MultiValue2<BigUint, ManagedVec<EsdtTokenPayment<Self::Api>>> {
         let caller = self.blockchain().get_caller();
         let mut egld_payment_amount = BigUint::zero();
