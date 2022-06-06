@@ -19,9 +19,9 @@ pub trait ViewsModule: crate::storage::StorageModule {
 
             OptionalValue::Some(
                 (
-                    auction.auctioned_token.token_type,
-                    auction.auctioned_token.nonce,
-                    auction.nr_auctioned_tokens,
+                    auction.auctioned_tokens.token_identifier,
+                    auction.auctioned_tokens.token_nonce,
+                    auction.auctioned_tokens.amount,
                 )
                     .into(),
             )
@@ -43,11 +43,11 @@ pub trait ViewsModule: crate::storage::StorageModule {
     fn get_payment_token_for_auction(
         &self,
         auction_id: u64,
-    ) -> OptionalValue<MultiValue2<TokenIdentifier, u64>> {
+    ) -> OptionalValue<MultiValue2<EgldOrEsdtTokenIdentifier, u64>> {
         if self.does_auction_exist(auction_id) {
-            let esdt_token = self.auction_by_id(auction_id).get().payment_token;
+            let auction = self.auction_by_id(auction_id).get();
 
-            OptionalValue::Some((esdt_token.token_type, esdt_token.nonce).into())
+            OptionalValue::Some((auction.payment_token, auction.payment_nonce).into())
         } else {
             OptionalValue::None
         }

@@ -39,13 +39,13 @@ pub trait EsdtNftMarketplace:
         min_bid: BigUint,
         max_bid: BigUint,
         deadline: u64,
-        accepted_payment_token: TokenIdentifier,
+        accepted_payment_token: EgldOrEsdtTokenIdentifier,
         opt_min_bid_diff: OptionalValue<BigUint>,
         opt_sft_max_one_per_payment: OptionalValue<bool>,
         opt_accepted_payment_token_nonce: OptionalValue<u64>,
         opt_start_time: OptionalValue<u64>,
     ) -> u64 {
-        let (nft_type, nft_nonce, nft_amount) = self.call_value().payment_as_tuple();
+        let (nft_type, nft_nonce, nft_amount) = self.call_value().single_esdt().into_tuple();
         require!(nft_amount >= NFT_AMOUNT, "Must tranfer at least one");
 
         let current_time = self.blockchain().get_block_timestamp();
@@ -118,17 +118,10 @@ pub trait EsdtNftMarketplace:
         };
 
         let auction = Auction {
-            auctioned_token: EsdtToken {
-                token_type: nft_type,
-                nonce: nft_nonce,
-            },
-            nr_auctioned_tokens: nft_amount,
+            auctioned_tokens: CustomEsdtTokenPayment::new(nft_type, nft_nonce, nft_amount),
             auction_type,
-
-            payment_token: EsdtToken {
-                token_type: accepted_payment_token,
-                nonce: accepted_payment_nft_nonce,
-            },
+            payment_token: accepted_payment_token,
+            payment_nonce: accepted_payment_nft_nonce,
             min_bid,
             max_bid: opt_max_bid,
             min_bid_diff,
@@ -152,7 +145,7 @@ pub trait EsdtNftMarketplace:
     #[endpoint]
     fn bid(&self, auction_id: u64, nft_type: TokenIdentifier, nft_nonce: u64) {
         let (payment_token, payment_token_nonce, payment_amount) =
-            self.call_value().payment_as_tuple();
+            self.call_value().egld_or_single_esdt().into_tuple();
         let mut auction = self.try_get_auction(auction_id);
         let caller = self.blockchain().get_caller();
         let current_time = self.blockchain().get_block_timestamp();
@@ -162,8 +155,8 @@ pub trait EsdtNftMarketplace:
             "Cannot bid on this type of auction"
         );
         require!(
-            auction.auctioned_token.token_type == nft_type
-                && auction.auctioned_token.nonce == nft_nonce,
+            auction.auctioned_tokens.token_identifier == nft_type
+                && auction.auctioned_tokens.token_nonce == nft_nonce,
             "Auction ID does not match the token"
         );
         require!(
@@ -176,8 +169,7 @@ pub trait EsdtNftMarketplace:
         );
         require!(current_time < auction.deadline, "Auction ended already");
         require!(
-            payment_token == auction.payment_token.token_type
-                && payment_token_nonce == auction.payment_token.nonce,
+            payment_token == auction.payment_token && payment_token_nonce == auction.payment_nonce,
             "Wrong token used as payment"
         );
         require!(auction.current_winner != caller, "Can't outbid yourself");
@@ -212,8 +204,8 @@ pub trait EsdtNftMarketplace:
         if auction.current_winner != ManagedAddress::zero() {
             self.transfer_or_save_payment(
                 &auction.current_winner,
-                &auction.payment_token.token_type,
-                auction.payment_token.nonce,
+                &auction.payment_token,
+                auction.payment_nonce,
                 &auction.current_bid,
                 b"bid refund",
             );
@@ -264,7 +256,7 @@ pub trait EsdtNftMarketplace:
         opt_sft_buy_amount: OptionalValue<BigUint>,
     ) {
         let (payment_token, payment_token_nonce, payment_amount) =
-            self.call_value().payment_as_tuple();
+            self.call_value().egld_or_single_esdt().into_tuple();
         let mut auction = self.try_get_auction(auction_id);
         let current_time = self.blockchain().get_block_timestamp();
         let caller = self.blockchain().get_caller();
@@ -281,18 +273,17 @@ pub trait EsdtNftMarketplace:
             "Cannot buy SFT for this type of auction"
         );
         require!(
-            auction.auctioned_token.token_type == nft_type
-                && auction.auctioned_token.nonce == nft_nonce,
+            auction.auctioned_tokens.token_identifier == nft_type
+                && auction.auctioned_tokens.token_nonce == nft_nonce,
             "Auction ID does not match the token"
         );
         require!(auction.original_owner != caller, "Can't buy your own token");
         require!(
-            sft_buy_amount <= auction.nr_auctioned_tokens,
+            sft_buy_amount <= auction.auctioned_tokens.amount,
             "Not enough SFTs available"
         );
         require!(
-            payment_token == auction.payment_token.token_type
-                && payment_token_nonce == auction.payment_token.nonce,
+            payment_token == auction.payment_token && payment_token_nonce == auction.payment_nonce,
             "Wrong token used as payment"
         );
         require!(
@@ -312,8 +303,8 @@ pub trait EsdtNftMarketplace:
         auction.current_bid = payment_amount;
         self.distribute_tokens_after_auction_end(&auction, Some(&sft_buy_amount));
 
-        auction.nr_auctioned_tokens -= &sft_buy_amount;
-        if auction.nr_auctioned_tokens == 0 {
+        auction.auctioned_tokens.amount -= &sft_buy_amount;
+        if auction.auctioned_tokens.amount == 0 {
             self.auction_by_id(auction_id).clear();
         } else {
             self.auction_by_id(auction_id).set(&auction);
@@ -338,10 +329,16 @@ pub trait EsdtNftMarketplace:
 
         self.auction_by_id(auction_id).clear();
 
-        let nft_type = &auction.auctioned_token.token_type;
-        let nft_nonce = auction.auctioned_token.nonce;
-        let nft_amount = &auction.nr_auctioned_tokens;
-        self.transfer_or_save_payment(&caller, nft_type, nft_nonce, nft_amount, b"returned token");
+        let nft_type = &auction.auctioned_tokens.token_identifier;
+        let nft_nonce = auction.auctioned_tokens.token_nonce;
+        let nft_amount = &auction.auctioned_tokens.amount;
+        self.transfer_or_save_payment(
+            &caller,
+            &EgldOrEsdtTokenIdentifier::esdt(nft_type.clone()),
+            nft_nonce,
+            nft_amount,
+            b"returned token",
+        );
 
         self.emit_withdraw_event(auction_id, auction);
     }
@@ -350,7 +347,7 @@ pub trait EsdtNftMarketplace:
     fn claim_tokens(
         &self,
         claim_destination: ManagedAddress,
-        token_nonce_pairs: MultiValueEncoded<MultiValue2<TokenIdentifier, u64>>,
+        token_nonce_pairs: MultiValueEncoded<MultiValue2<EgldOrEsdtTokenIdentifier, u64>>,
     ) -> MultiValue2<BigUint, ManagedVec<EsdtTokenPayment<Self::Api>>> {
         let caller = self.blockchain().get_caller();
         let mut egld_payment_amount = BigUint::zero();
@@ -367,7 +364,11 @@ pub trait EsdtNftMarketplace:
                 if token_id.is_egld() {
                     egld_payment_amount = amount;
                 } else {
-                    output_payments.push(EsdtTokenPayment::new(token_id, token_nonce, amount));
+                    output_payments.push(EsdtTokenPayment::new(
+                        token_id.unwrap_esdt(),
+                        token_nonce,
+                        amount,
+                    ));
                 }
             }
         }
@@ -422,13 +423,13 @@ pub trait EsdtNftMarketplace:
         auction: &Auction<Self::Api>,
         opt_sft_amount: Option<&BigUint>,
     ) {
-        let nft_type = &auction.auctioned_token.token_type;
-        let nft_nonce = auction.auctioned_token.nonce;
+        let nft_type = &auction.auctioned_tokens.token_identifier;
+        let nft_nonce = auction.auctioned_tokens.token_nonce;
 
         if !auction.current_winner.is_zero() {
             let nft_info = self.get_nft_info(nft_type, nft_nonce);
-            let token_id = &auction.payment_token.token_type;
-            let nonce = auction.payment_token.nonce;
+            let token_id = &auction.payment_token;
+            let nonce = auction.payment_nonce;
             let bid_split_amounts = self.calculate_winning_bid_split(auction);
 
             // send part as cut for contract owner
@@ -467,11 +468,11 @@ pub trait EsdtNftMarketplace:
                     Some(amt) => amt,
                     None => &nft_amount,
                 },
-                _ => &auction.nr_auctioned_tokens,
+                _ => &auction.auctioned_tokens.amount,
             };
             self.transfer_or_save_payment(
                 &auction.current_winner,
-                nft_type,
+                &EgldOrEsdtTokenIdentifier::esdt(nft_type.clone()),
                 nft_nonce,
                 nft_amount_to_send,
                 b"bought token at auction",
@@ -480,9 +481,9 @@ pub trait EsdtNftMarketplace:
             // return to original owner
             self.transfer_or_save_payment(
                 &auction.original_owner,
-                nft_type,
+                &EgldOrEsdtTokenIdentifier::esdt(nft_type.clone()),
                 nft_nonce,
-                &auction.nr_auctioned_tokens,
+                &auction.auctioned_tokens.amount,
                 b"returned token",
             );
         }
@@ -491,7 +492,7 @@ pub trait EsdtNftMarketplace:
     fn transfer_or_save_payment(
         &self,
         to: &ManagedAddress,
-        token_id: &TokenIdentifier,
+        token_id: &EgldOrEsdtTokenIdentifier,
         nonce: u64,
         amount: &BigUint,
         data: &'static [u8],

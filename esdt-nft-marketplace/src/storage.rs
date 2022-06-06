@@ -20,7 +20,7 @@ pub trait StorageModule {
     fn claimable_amount(
         &self,
         address: &ManagedAddress,
-        token_id: &TokenIdentifier,
+        token_id: &EgldOrEsdtTokenIdentifier,
         token_nonce: u64,
     ) -> SingleValueMapper<BigUint>;
 }

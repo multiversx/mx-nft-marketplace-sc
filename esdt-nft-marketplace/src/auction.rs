@@ -1,13 +1,31 @@
 elrond_wasm::imports!();
 elrond_wasm::derive_imports!();
 
+// temporary until EsdtTokenType is removed from EsdtTokenPayment's encoding
+#[derive(TypeAbi, TopEncode, TopDecode, NestedEncode, NestedDecode)]
+pub struct CustomEsdtTokenPayment<M: ManagedTypeApi> {
+    pub token_identifier: TokenIdentifier<M>,
+    pub token_nonce: u64,
+    pub amount: BigUint<M>,
+}
+
+impl<M: ManagedTypeApi> CustomEsdtTokenPayment<M> {
+    pub fn new(token_identifier: TokenIdentifier<M>, token_nonce: u64, amount: BigUint<M>) -> Self {
+        CustomEsdtTokenPayment {
+            token_identifier,
+            token_nonce,
+            amount,
+        }
+    }
+}
+
 #[derive(TopEncode, TopDecode, TypeAbi)]
 pub struct Auction<M: ManagedTypeApi> {
-    pub auctioned_token: EsdtToken<M>,
-    pub nr_auctioned_tokens: BigUint<M>,
+    pub auctioned_tokens: CustomEsdtTokenPayment<M>,
     pub auction_type: AuctionType,
 
-    pub payment_token: EsdtToken<M>,
+    pub payment_token: EgldOrEsdtTokenIdentifier<M>,
+    pub payment_nonce: u64,
     pub min_bid: BigUint<M>,
     pub max_bid: Option<BigUint<M>>,
     pub min_bid_diff: BigUint<M>,
@@ -27,12 +45,6 @@ pub enum AuctionType {
     Nft,
     SftAll,
     SftOnePerPayment,
-}
-
-#[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, TypeAbi, Clone)]
-pub struct EsdtToken<M: ManagedTypeApi> {
-    pub token_type: TokenIdentifier<M>,
-    pub nonce: u64,
 }
 
 pub struct BidSplitAmounts<M: ManagedTypeApi> {
