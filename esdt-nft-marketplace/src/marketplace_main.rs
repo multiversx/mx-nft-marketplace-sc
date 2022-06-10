@@ -496,11 +496,13 @@ pub trait EsdtNftMarketplace:
         amount: &BigUint,
         data: &'static [u8],
     ) {
-        if self.blockchain().is_smart_contract(to) {
-            self.claimable_amount(to, token_id, nonce)
-                .update(|amt| *amt += amount);
-        } else {
-            self.send().direct(to, token_id, nonce, amount, data);
+        if amount > &BigUint::zero() {
+            if self.blockchain().is_smart_contract(to) {
+                self.claimable_amount(to, token_id, nonce)
+                    .update(|amt| *amt += amount);
+            } else {
+                self.send().direct(to, token_id, nonce, amount, data);
+            }
         }
     }
 
