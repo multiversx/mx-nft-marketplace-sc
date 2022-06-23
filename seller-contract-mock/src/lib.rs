@@ -2,6 +2,8 @@
 
 elrond_wasm::imports!();
 
+use esdt_nft_marketplace::token_distribution::ProxyTrait as _;
+
 #[elrond_wasm::derive::contract]
 pub trait Adder {
     #[init]

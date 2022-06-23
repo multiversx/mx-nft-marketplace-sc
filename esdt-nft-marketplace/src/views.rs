@@ -3,7 +3,12 @@ elrond_wasm::imports!();
 use crate::auction::*;
 
 #[elrond_wasm::module]
-pub trait ViewsModule: crate::storage::StorageModule {
+pub trait ViewsModule:
+    crate::auction::AuctionModule
+    + crate::token_distribution::TokenDistributionModule
+    + crate::events::EventsModule
+    + crate::common_util_functions::CommonUtilFunctions
+{
     #[view(doesAuctionExist)]
     fn does_auction_exist(&self, auction_id: u64) -> bool {
         !self.auction_by_id(auction_id).is_empty()
@@ -14,8 +19,9 @@ pub trait ViewsModule: crate::storage::StorageModule {
         &self,
         auction_id: u64,
     ) -> OptionalValue<MultiValue3<TokenIdentifier, u64, BigUint>> {
-        if self.does_auction_exist(auction_id) {
-            let auction = self.auction_by_id(auction_id).get();
+        let auction_mapper = self.auction_by_id(auction_id);
+        if !auction_mapper.is_empty() {
+            let auction = auction_mapper.get();
 
             OptionalValue::Some(
                 (
@@ -32,8 +38,9 @@ pub trait ViewsModule: crate::storage::StorageModule {
 
     #[endpoint(getAuctionType)]
     fn get_auction_type(&self, auction_id: u64) -> AuctionType {
-        if self.does_auction_exist(auction_id) {
-            self.auction_by_id(auction_id).get().auction_type
+        let auction_mapper = self.auction_by_id(auction_id);
+        if !auction_mapper.is_empty() {
+            auction_mapper.get().auction_type
         } else {
             AuctionType::None
         }
@@ -44,8 +51,9 @@ pub trait ViewsModule: crate::storage::StorageModule {
         &self,
         auction_id: u64,
     ) -> OptionalValue<MultiValue2<EgldOrEsdtTokenIdentifier, u64>> {
-        if self.does_auction_exist(auction_id) {
-            let auction = self.auction_by_id(auction_id).get();
+        let auction_mapper = self.auction_by_id(auction_id);
+        if !auction_mapper.is_empty() {
+            let auction = auction_mapper.get();
 
             OptionalValue::Some((auction.payment_token, auction.payment_nonce).into())
         } else {
@@ -55,16 +63,11 @@ pub trait ViewsModule: crate::storage::StorageModule {
 
     #[view(getMinMaxBid)]
     fn get_min_max_bid(&self, auction_id: u64) -> OptionalValue<MultiValue2<BigUint, BigUint>> {
-        if self.does_auction_exist(auction_id) {
-            let auction = self.auction_by_id(auction_id).get();
+        let auction_mapper = self.auction_by_id(auction_id);
+        if !auction_mapper.is_empty() {
+            let auction = auction_mapper.get();
 
-            OptionalValue::Some(
-                (
-                    auction.min_bid,
-                    auction.max_bid.unwrap_or_else(BigUint::zero),
-                )
-                    .into(),
-            )
+            OptionalValue::Some((auction.min_bid, auction.max_bid.unwrap_or_default()).into())
         } else {
             OptionalValue::None
         }
@@ -72,8 +75,9 @@ pub trait ViewsModule: crate::storage::StorageModule {
 
     #[view(getStartTime)]
     fn get_start_time(&self, auction_id: u64) -> OptionalValue<u64> {
-        if self.does_auction_exist(auction_id) {
-            OptionalValue::Some(self.auction_by_id(auction_id).get().start_time)
+        let auction_mapper = self.auction_by_id(auction_id);
+        if !auction_mapper.is_empty() {
+            OptionalValue::Some(auction_mapper.get().start_time)
         } else {
             OptionalValue::None
         }
@@ -81,8 +85,9 @@ pub trait ViewsModule: crate::storage::StorageModule {
 
     #[view(getDeadline)]
     fn get_deadline(&self, auction_id: u64) -> OptionalValue<u64> {
-        if self.does_auction_exist(auction_id) {
-            OptionalValue::Some(self.auction_by_id(auction_id).get().deadline)
+        let auction_mapper = self.auction_by_id(auction_id);
+        if !auction_mapper.is_empty() {
+            OptionalValue::Some(auction_mapper.get().deadline)
         } else {
             OptionalValue::None
         }
@@ -90,8 +95,9 @@ pub trait ViewsModule: crate::storage::StorageModule {
 
     #[view(getOriginalOwner)]
     fn get_original_owner(&self, auction_id: u64) -> OptionalValue<ManagedAddress> {
-        if self.does_auction_exist(auction_id) {
-            OptionalValue::Some(self.auction_by_id(auction_id).get().original_owner)
+        let auction_mapper = self.auction_by_id(auction_id);
+        if !auction_mapper.is_empty() {
+            OptionalValue::Some(auction_mapper.get().original_owner)
         } else {
             OptionalValue::None
         }
@@ -99,8 +105,9 @@ pub trait ViewsModule: crate::storage::StorageModule {
 
     #[view(getCurrentWinningBid)]
     fn get_current_winning_bid(&self, auction_id: u64) -> OptionalValue<BigUint> {
-        if self.does_auction_exist(auction_id) {
-            OptionalValue::Some(self.auction_by_id(auction_id).get().current_bid)
+        let auction_mapper = self.auction_by_id(auction_id);
+        if !auction_mapper.is_empty() {
+            OptionalValue::Some(auction_mapper.get().current_bid)
         } else {
             OptionalValue::None
         }
@@ -108,8 +115,9 @@ pub trait ViewsModule: crate::storage::StorageModule {
 
     #[view(getCurrentWinner)]
     fn get_current_winner(&self, auction_id: u64) -> OptionalValue<ManagedAddress> {
-        if self.does_auction_exist(auction_id) {
-            OptionalValue::Some(self.auction_by_id(auction_id).get().current_winner)
+        let auction_mapper = self.auction_by_id(auction_id);
+        if !auction_mapper.is_empty() {
+            OptionalValue::Some(auction_mapper.get().current_winner)
         } else {
             OptionalValue::None
         }
@@ -117,8 +125,9 @@ pub trait ViewsModule: crate::storage::StorageModule {
 
     #[view(getFullAuctionData)]
     fn get_full_auction_data(&self, auction_id: u64) -> OptionalValue<Auction<Self::Api>> {
-        if self.does_auction_exist(auction_id) {
-            OptionalValue::Some(self.auction_by_id(auction_id).get())
+        let auction_mapper = self.auction_by_id(auction_id);
+        if !auction_mapper.is_empty() {
+            OptionalValue::Some(auction_mapper.get())
         } else {
             OptionalValue::None
         }
