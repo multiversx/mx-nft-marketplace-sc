@@ -103,7 +103,7 @@ pub trait BiddingModule:
             payment_token_nonce,
         );
 
-        require!(sft_buy_amount > 0, "Must by more than 0");
+        require!(sft_buy_amount > 0, "Must buy more than 0");
         require!(
             auction.auction_type == AuctionType::SftOnePerPayment,
             "Cannot buy SFT for this type of auction"
