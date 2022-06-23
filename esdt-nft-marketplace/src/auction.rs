@@ -203,6 +203,7 @@ pub trait AuctionModule:
         self.emit_withdraw_event(auction_id, auction);
     }
 
+    #[view(getFullAuctionData)]
     fn try_get_auction(&self, auction_id: u64) -> Auction<Self::Api> {
         let auction_mapper = self.auction_by_id(auction_id);
         require!(!auction_mapper.is_empty(), "Auction does not exist");

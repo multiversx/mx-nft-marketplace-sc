@@ -9,14 +9,12 @@ pub mod bidding;
 pub mod common_util_functions;
 pub mod events;
 pub mod token_distribution;
-pub mod views;
 
 #[elrond_wasm::contract]
 pub trait EsdtNftMarketplace:
     auction::AuctionModule
     + bidding::BiddingModule
     + token_distribution::TokenDistributionModule
-    + views::ViewsModule
     + events::EventsModule
     + common_util_functions::CommonUtilFunctions
 {
