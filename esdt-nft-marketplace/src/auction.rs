@@ -53,7 +53,6 @@ pub trait AuctionModule:
         opt_start_time: OptionalValue<u64>,
     ) -> u64 {
         let (nft_type, nft_nonce, nft_amount) = self.call_value().single_esdt().into_tuple();
-        require!(nft_amount >= NFT_AMOUNT, "Must tranfer at least one");
 
         let current_time = self.blockchain().get_block_timestamp();
         let start_time = match opt_start_time {
@@ -80,7 +79,7 @@ pub trait AuctionModule:
             None
         };
 
-        require!(min_bid > 0u32, "Min bid must be higher than 0");
+        require!(min_bid > 0, "Min bid must be higher than 0");
         require!(
             nft_nonce > 0,
             "Only Semi-Fungible and Non-Fungible tokens can be auctioned"

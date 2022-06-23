@@ -1,6 +1,6 @@
 elrond_wasm::imports!();
 
-use crate::auction::{AuctionType, NFT_AMOUNT};
+use crate::auction::{Auction, AuctionType, NFT_AMOUNT};
 
 #[elrond_wasm::module]
 pub trait BiddingModule:
@@ -16,29 +16,18 @@ pub trait BiddingModule:
             self.call_value().egld_or_single_esdt().into_tuple();
         let mut auction = self.try_get_auction(auction_id);
         let caller = self.blockchain().get_caller();
-        let current_time = self.blockchain().get_block_timestamp();
+
+        self.common_bid_checks(
+            &auction,
+            &nft_type,
+            nft_nonce,
+            &payment_token,
+            payment_token_nonce,
+        );
 
         require!(
             auction.auction_type != AuctionType::SftOnePerPayment,
             "Cannot bid on this type of auction"
-        );
-        require!(
-            auction.auctioned_tokens.token_identifier == nft_type
-                && auction.auctioned_tokens.token_nonce == nft_nonce,
-            "Auction ID does not match the token"
-        );
-        require!(
-            auction.original_owner != caller,
-            "Can't bid on your own token"
-        );
-        require!(
-            current_time >= auction.start_time,
-            "Auction hasn't started yet"
-        );
-        require!(current_time < auction.deadline, "Auction ended already");
-        require!(
-            payment_token == auction.payment_token && payment_token_nonce == auction.payment_nonce,
-            "Wrong token used as payment"
         );
         require!(auction.current_winner != caller, "Can't outbid yourself");
         require!(
@@ -98,7 +87,6 @@ pub trait BiddingModule:
         let (payment_token, payment_token_nonce, payment_amount) =
             self.call_value().egld_or_single_esdt().into_tuple();
         let mut auction = self.try_get_auction(auction_id);
-        let current_time = self.blockchain().get_block_timestamp();
         let caller = self.blockchain().get_caller();
 
         let sft_buy_amount = match opt_sft_buy_amount {
@@ -107,36 +95,26 @@ pub trait BiddingModule:
         };
         let sft_total_value = &sft_buy_amount * &auction.min_bid;
 
+        self.common_bid_checks(
+            &auction,
+            &nft_type,
+            nft_nonce,
+            &payment_token,
+            payment_token_nonce,
+        );
+
         require!(sft_buy_amount > 0, "Must by more than 0");
         require!(
             auction.auction_type == AuctionType::SftOnePerPayment,
             "Cannot buy SFT for this type of auction"
         );
         require!(
-            auction.auctioned_tokens.token_identifier == nft_type
-                && auction.auctioned_tokens.token_nonce == nft_nonce,
-            "Auction ID does not match the token"
-        );
-        require!(auction.original_owner != caller, "Can't buy your own token");
-        require!(
             sft_buy_amount <= auction.auctioned_tokens.amount,
             "Not enough SFTs available"
         );
         require!(
-            payment_token == auction.payment_token && payment_token_nonce == auction.payment_nonce,
-            "Wrong token used as payment"
-        );
-        require!(
             sft_total_value == payment_amount,
             "Wrong amount paid, must pay equal to the selling price"
-        );
-        require!(
-            current_time >= auction.start_time,
-            "Cannot buy SFT before start time"
-        );
-        require!(
-            current_time <= auction.deadline,
-            "Cannot buy SFT after deadline"
         );
 
         auction.current_winner = caller;
@@ -151,5 +129,36 @@ pub trait BiddingModule:
         }
 
         self.emit_buy_sft_event(auction_id, auction, sft_buy_amount);
+    }
+
+    fn common_bid_checks(
+        &self,
+        auction: &Auction<Self::Api>,
+        nft_type: &TokenIdentifier,
+        nft_nonce: u64,
+        payment_token: &EgldOrEsdtTokenIdentifier,
+        payment_nonce: u64,
+    ) {
+        let caller = self.blockchain().get_caller();
+        let current_time = self.blockchain().get_block_timestamp();
+
+        require!(
+            &auction.auctioned_tokens.token_identifier == nft_type
+                && auction.auctioned_tokens.token_nonce == nft_nonce,
+            "Auction ID does not match the token"
+        );
+        require!(
+            auction.original_owner != caller,
+            "Can't bid on your own token"
+        );
+        require!(
+            current_time >= auction.start_time,
+            "Auction hasn't started yet"
+        );
+        require!(current_time < auction.deadline, "Auction ended already");
+        require!(
+            payment_token == &auction.payment_token && payment_nonce == auction.payment_nonce,
+            "Wrong token used as payment"
+        );
     }
 }
