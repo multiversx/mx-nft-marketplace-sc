@@ -2,6 +2,8 @@
 
 elrond_wasm::imports!();
 
+use esdt_nft_marketplace::token_distribution::ProxyTrait as _;
+
 #[elrond_wasm::derive::contract]
 pub trait Adder {
     #[init]
@@ -11,7 +13,7 @@ pub trait Adder {
     fn claim(
         &self,
         marketplace_sc_address: ManagedAddress,
-        token_id: TokenIdentifier,
+        token_id: EgldOrEsdtTokenIdentifier,
         token_nonce: u64,
     ) {
         let caller = self.blockchain().get_caller();

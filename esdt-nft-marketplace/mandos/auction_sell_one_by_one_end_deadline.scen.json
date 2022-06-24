@@ -52,7 +52,7 @@
             },
             "expect": {
                 "status": "4",
-                "message": "str:Cannot buy SFT after deadline",
+                "message": "str:Auction ended already",
                 "gas": "*",
                 "refund": "*"
             }

@@ -11,21 +11,11 @@ elrond_wasm_node::wasm_endpoints! {
         bid
         buySft
         claimTokens
-        doesAuctionExist
         endAuction
-        getAuctionType
-        getAuctionedToken
         getClaimableAmount
-        getCurrentWinner
-        getCurrentWinningBid
-        getDeadline
         getFullAuctionData
         getLastValidAuctionId
         getMarketplaceCutPercentage
-        getMinMaxBid
-        getOriginalOwner
-        getPaymentTokenForAuction
-        getStartTime
         setCutPercentage
         withdraw
     )
