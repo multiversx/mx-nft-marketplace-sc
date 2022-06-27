@@ -143,6 +143,10 @@ pub trait TokenDistributionModule: crate::common_util_functions::CommonUtilFunct
         nonce: u64,
         amount: &BigUint,
     ) {
+        if amount == &0 {
+            return;
+        }
+
         if self.blockchain().is_smart_contract(to) {
             self.claimable_amount(to, token_id, nonce)
                 .update(|amt| *amt += amount);
