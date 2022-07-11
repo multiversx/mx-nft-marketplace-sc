@@ -1,7 +1,7 @@
 elrond_wasm::imports!();
 elrond_wasm::derive_imports!();
 
-use super::auction::{Auction, AuctionType};
+use super::auction_model::{Auction, AuctionType};
 
 #[allow(clippy::too_many_arguments)]
 #[elrond_wasm::module]
