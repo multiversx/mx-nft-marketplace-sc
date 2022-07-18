@@ -16,7 +16,10 @@ elrond_wasm_node::wasm_endpoints! {
         getFullAuctionData
         getLastValidAuctionId
         getMarketplaceCutPercentage
+        isPaused
+        pause
         setCutPercentage
+        unpause
         withdraw
     )
 }

@@ -17,6 +17,7 @@ pub trait EsdtNftMarketplace:
     + token_distribution::TokenDistributionModule
     + events::EventsModule
     + common_util_functions::CommonUtilFunctions
+    + elrond_wasm_modules::pause::PauseModule
 {
     #[init]
     fn init(&self, bid_cut_percentage: u64) {

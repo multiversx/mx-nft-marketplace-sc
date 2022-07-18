@@ -8,10 +8,13 @@ pub trait BiddingModule:
     + crate::events::EventsModule
     + crate::token_distribution::TokenDistributionModule
     + crate::common_util_functions::CommonUtilFunctions
+    + elrond_wasm_modules::pause::PauseModule
 {
     #[payable("*")]
     #[endpoint]
     fn bid(&self, auction_id: u64, nft_type: TokenIdentifier, nft_nonce: u64) {
+        self.require_not_paused();
+
         let (payment_token, payment_token_nonce, payment_amount) =
             self.call_value().egld_or_single_esdt().into_tuple();
         let mut auction = self.try_get_auction(auction_id);
@@ -84,6 +87,8 @@ pub trait BiddingModule:
         nft_nonce: u64,
         opt_sft_buy_amount: OptionalValue<BigUint>,
     ) {
+        self.require_not_paused();
+
         let (payment_token, payment_token_nonce, payment_amount) =
             self.call_value().egld_or_single_esdt().into_tuple();
         let mut auction = self.try_get_auction(auction_id);

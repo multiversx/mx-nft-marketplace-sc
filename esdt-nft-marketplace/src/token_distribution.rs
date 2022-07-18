@@ -9,13 +9,17 @@ pub struct BidSplitAmounts<M: ManagedTypeApi> {
 }
 
 #[elrond_wasm::module]
-pub trait TokenDistributionModule: crate::common_util_functions::CommonUtilFunctions {
+pub trait TokenDistributionModule:
+    crate::common_util_functions::CommonUtilFunctions + elrond_wasm_modules::pause::PauseModule
+{
     #[endpoint(claimTokens)]
     fn claim_tokens(
         &self,
         claim_destination: ManagedAddress,
         token_nonce_pairs: MultiValueEncoded<MultiValue2<EgldOrEsdtTokenIdentifier, u64>>,
     ) -> MultiValue2<BigUint, ManagedVec<EsdtTokenPayment<Self::Api>>> {
+        self.require_not_paused();
+
         let caller = self.blockchain().get_caller();
         let mut egld_payment_amount = BigUint::zero();
         let mut output_payments = ManagedVec::new();

@@ -37,6 +37,7 @@ pub trait AuctionModule:
     crate::token_distribution::TokenDistributionModule
     + crate::events::EventsModule
     + crate::common_util_functions::CommonUtilFunctions
+    + elrond_wasm_modules::pause::PauseModule
 {
     #[payable("*")]
     #[endpoint(auctionToken)]
@@ -52,6 +53,8 @@ pub trait AuctionModule:
         opt_accepted_payment_token_nonce: OptionalValue<u64>,
         opt_start_time: OptionalValue<u64>,
     ) -> u64 {
+        self.require_not_paused();
+
         let (nft_type, nft_nonce, nft_amount) = self.call_value().single_esdt().into_tuple();
 
         let current_time = self.blockchain().get_block_timestamp();
@@ -149,6 +152,8 @@ pub trait AuctionModule:
 
     #[endpoint(endAuction)]
     fn end_auction(&self, auction_id: u64) {
+        self.require_not_paused();
+
         let auction = self.try_get_auction(auction_id);
         let current_time = self.blockchain().get_block_timestamp();
 
@@ -176,6 +181,8 @@ pub trait AuctionModule:
 
     #[endpoint]
     fn withdraw(&self, auction_id: u64) {
+        self.require_not_paused();
+
         let auction = self.try_get_auction(auction_id);
         let caller = self.blockchain().get_caller();
 
