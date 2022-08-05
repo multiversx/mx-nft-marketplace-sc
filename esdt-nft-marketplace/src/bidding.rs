@@ -1,6 +1,7 @@
 elrond_wasm::imports!();
 
-use crate::auction::{Auction, AuctionType, NFT_AMOUNT};
+use crate::auction::NFT_AMOUNT;
+use crate::auction_model::{Auction, AuctionType};
 
 #[elrond_wasm::module]
 pub trait BiddingModule:

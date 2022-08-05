@@ -1,36 +1,9 @@
 elrond_wasm::imports!();
-elrond_wasm::derive_imports!();
+
+use crate::auction_model::{Auction, AuctionType};
 
 pub const PERCENTAGE_TOTAL: u64 = 10_000; // 100%
 pub const NFT_AMOUNT: u32 = 1; // Token has to be unique to be considered NFT
-
-#[derive(TopEncode, TopDecode, TypeAbi)]
-pub struct Auction<M: ManagedTypeApi> {
-    pub auctioned_tokens: EsdtTokenPayment<M>,
-    pub auction_type: AuctionType,
-
-    pub payment_token: EgldOrEsdtTokenIdentifier<M>,
-    pub payment_nonce: u64,
-    pub min_bid: BigUint<M>,
-    pub max_bid: Option<BigUint<M>>,
-    pub min_bid_diff: BigUint<M>,
-    pub start_time: u64,
-    pub deadline: u64,
-
-    pub original_owner: ManagedAddress<M>,
-    pub current_bid: BigUint<M>,
-    pub current_winner: ManagedAddress<M>,
-    pub marketplace_cut_percentage: BigUint<M>,
-    pub creator_royalties_percentage: BigUint<M>,
-}
-
-#[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, TypeAbi, PartialEq)]
-pub enum AuctionType {
-    None,
-    Nft,
-    SftAll,
-    SftOnePerPayment,
-}
 
 #[elrond_wasm::module]
 pub trait AuctionModule:
@@ -114,9 +87,10 @@ pub trait AuctionModule:
                 .unwrap_or_default()
         };
 
-        let auction_id = self.last_valid_auction_id().get() + 1;
-        self.last_valid_auction_id().set(&auction_id);
-
+        let auction_id = self.last_valid_auction_id().update(|last_id| {
+            *last_id += 1;
+            *last_id
+        });
         let auction_type = if nft_amount > NFT_AMOUNT {
             match sft_max_one_per_payment {
                 true => AuctionType::SftOnePerPayment,

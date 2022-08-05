@@ -1,6 +1,7 @@
 elrond_wasm::imports!();
 
-use crate::auction::{Auction, AuctionType, NFT_AMOUNT, PERCENTAGE_TOTAL};
+use crate::auction::{NFT_AMOUNT, PERCENTAGE_TOTAL};
+use crate::auction_model::{Auction, AuctionType};
 
 pub struct BidSplitAmounts<M: ManagedTypeApi> {
     pub creator: BigUint<M>,
