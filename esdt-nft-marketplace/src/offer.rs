@@ -117,7 +117,7 @@ pub trait OfferModule:
             "The sent token nonce is different from the offer"
         );
         require!(
-            offer_nft.amount == 1u64,
+            offer_nft.amount == NFT_AMOUNT,
             "You can only send NFTs"
         );
 

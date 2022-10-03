@@ -3,8 +3,9 @@ elrond_wasm::derive_imports!();
 
 pub const PERCENTAGE_TOTAL: u64 = 10_000; // 100%
 pub const NFT_AMOUNT: u32 = 1; // Token has to be unique to be considered NFT
+pub const MIN_GAS_TO_END_AUCTION:u64 = 2_000_000;
 
-#[derive(TopEncode, TopDecode, TypeAbi)]
+#[derive(TopEncode, TopDecode, TypeAbi, Clone)]
 pub struct Auction<M: ManagedTypeApi> {
     pub auctioned_tokens: EsdtTokenPayment<M>,
     pub auction_type: AuctionType,
@@ -24,7 +25,7 @@ pub struct Auction<M: ManagedTypeApi> {
     pub creator_royalties_percentage: BigUint<M>,
 }
 
-#[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, TypeAbi, PartialEq)]
+#[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, TypeAbi, PartialEq, Clone)]
 pub enum AuctionType {
     None,
     Nft,
@@ -173,6 +174,10 @@ pub trait AuctionModule:
             "Cannot end this type of auction"
         );
 
+        self.end_auction_common(auction_id, auction);
+    }
+
+    fn end_auction_common(&self, auction_id: u64, auction: Auction<Self::Api>) {
         self.distribute_tokens_after_auction_end(&auction, None);
         self.auction_by_id(auction_id).clear();
 

@@ -1,6 +1,6 @@
 elrond_wasm::imports!();
 
-use crate::auction::{Auction, AuctionType, NFT_AMOUNT};
+use crate::auction::{Auction, AuctionType, MIN_GAS_TO_END_AUCTION, NFT_AMOUNT};
 
 #[elrond_wasm::module]
 pub trait BiddingModule:
@@ -42,11 +42,14 @@ pub trait BiddingModule:
             "Bid must be higher than the current winning bid"
         );
 
+        let mut max_bid_reached = false;
         if let Some(max_bid) = &auction.max_bid {
             require!(
                 &payment_amount <= max_bid,
                 "Bid must be less than or equal to the max bid"
             );
+
+            max_bid_reached = &payment_amount == max_bid;
         }
 
         if auction.current_bid > 0 {
@@ -75,7 +78,16 @@ pub trait BiddingModule:
         auction.current_winner = caller;
         self.auction_by_id(auction_id).set(&auction);
 
-        self.emit_bid_event(auction_id, auction);
+        self.emit_bid_event(auction_id, auction.clone());
+
+        // end auction in case the max bid has been reached
+        let gas_before = self.blockchain().get_gas_left();
+        if gas_before >= MIN_GAS_TO_END_AUCTION
+            && max_bid_reached
+            && auction.auction_type == AuctionType::SftOnePerPayment
+        {
+            self.end_auction_common(auction_id, auction);
+        }
     }
 
     #[payable("*")]
