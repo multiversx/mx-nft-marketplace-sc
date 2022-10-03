@@ -7,6 +7,7 @@
 elrond_wasm_node::wasm_endpoints! {
     esdt_nft_marketplace
     (
+        acceptOffer
         auctionToken
         bid
         buySft
@@ -14,13 +15,19 @@ elrond_wasm_node::wasm_endpoints! {
         endAuction
         getClaimableAmount
         getFullAuctionData
+        getFullOfferData
         getLastValidAuctionId
+        getLastValidOfferId
         getMarketplaceCutPercentage
+        getOffersByAddress
+        getOffersByToken
         isPaused
         pause
+        sendOffer
         setCutPercentage
         unpause
         withdraw
+        withdrawOffer
     )
 }
 

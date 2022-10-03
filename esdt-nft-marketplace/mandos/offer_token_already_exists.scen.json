@@ -1,0 +1,96 @@
+{
+    "name": "offer token already exists",
+    "gasSchedule": "v4",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "offer_token.scen.json"
+        },
+        {
+            "step": "scCall",
+            "txId": "offer token already exists",
+            "tx": {
+                "from": "address:first_bidder",
+                "to": "sc:marketplace",
+                "value": "10",
+                "function": "sendOffer",
+                "arguments": [
+                    "str:NFT-123456",
+                    "1",
+                    "125,000"
+                ],
+                "gasLimit": "15,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "4",
+                "message": "str:Offer already exists!",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:seller": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:NFT-123456": {
+                            "instances": [
+                                {
+                                    "nonce": "1",
+                                    "balance": "1",
+                                    "creator": "address:nft_creator",
+                                    "royalties": "2000"
+                                }
+                            ]
+                        },
+                        "str:SFT-123456": {
+                            "instances": [
+                                {
+                                    "nonce": "1",
+                                    "balance": "10",
+                                    "creator": "address:nft_creator",
+                                    "royalties": "2000"
+                                }
+                            ]
+                        }
+                    },
+                    "storage": {}
+                },
+                "address:first_bidder": {
+                    "nonce": "3",
+                    "balance": "990",
+                    "storage": {}
+                },
+                "sc:marketplace": {
+                    "nonce": "0",
+                    "balance": "10",
+                    "storage": {
+                        "str:bidCutPercentage": "1000",
+                        "str:lastValidOfferId": "1",
+                        "str:offerExists|address:first_bidder|nested:str:NFT-123456|u64:1|nested:str:EGLD": "1",
+                        "str:offersByAddress|address:first_bidder|str:.len": "1",
+                        "str:offersByAddress|address:first_bidder|str:.item|u32:1": "1",
+                        "str:offersByAddress|address:first_bidder|str:.index|u32:0|u32:1": "1",
+                        "str:offersByToken|nested:str:NFT-123456|u64:1|str:.len": "1",
+                        "str:offersByToken|nested:str:NFT-123456|u64:1|str:.item|u32:1": "1",
+                        "str:offersByToken|nested:str:NFT-123456|u64:1|str:.index|u32:0|u32:1": "1",
+                        "str:offerById|u64:1": {
+                            "01-offer_token": "nested:str:NFT-123456|u64:1",
+                            "01-payment_token": "nested:str:EGLD|u64:0",
+                            "03-offer_price": "biguint:10",
+                            "04-start_time": "u64:123,000",
+                            "05-deadline": "u64:125,000",
+                            "06-offer_owner": "address:first_bidder",
+                            "07-marketplace_cut_percentage": "biguint:1000"
+                        }
+                    },
+                    "code": "file:../output/esdt-nft-marketplace.wasm"
+                },
+                "+": {}
+            }
+        }
+    ]
+}

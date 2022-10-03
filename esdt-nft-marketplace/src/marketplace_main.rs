@@ -5,6 +5,7 @@ elrond_wasm::imports!();
 use crate::auction::PERCENTAGE_TOTAL;
 
 pub mod auction;
+pub mod offer;
 pub mod bidding;
 pub mod common_util_functions;
 pub mod events;
@@ -13,6 +14,7 @@ pub mod token_distribution;
 #[elrond_wasm::contract]
 pub trait EsdtNftMarketplace:
     auction::AuctionModule
+    + offer::OfferModule
     + bidding::BiddingModule
     + token_distribution::TokenDistributionModule
     + events::EventsModule
