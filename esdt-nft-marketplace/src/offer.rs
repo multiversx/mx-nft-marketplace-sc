@@ -1,6 +1,8 @@
 elrond_wasm::imports!();
 elrond_wasm::derive_imports!();
 
+use crate::auction::NFT_AMOUNT;
+
 #[derive(TopEncode, TopDecode, TypeAbi)]
 pub struct Offer<M: ManagedTypeApi> {
     pub offer_token: EsdtTokenPayment<M>,
@@ -42,7 +44,7 @@ pub trait OfferModule:
         require!(deadline > current_time, "Deadline can't be in the past!");
 
         let offer_token =
-            EsdtTokenPayment::new(desired_nft_id, desired_nft_nonce, BigUint::from(1u64));
+            EsdtTokenPayment::new(desired_nft_id, desired_nft_nonce, BigUint::from(NFT_AMOUNT));
 
         let offer = Offer {
             offer_token,
