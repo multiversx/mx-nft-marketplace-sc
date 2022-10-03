@@ -223,11 +223,6 @@
                 "address:second_bidder": {
                     "nonce": "2",
                     "balance": "0",
-                    "storage": {}
-                },
-                "sc:marketplace": {
-                    "nonce": "0",
-                    "balance": "1000",
                     "esdt": {
                         "str:NFT-123456": {
                             "instances": [
@@ -240,25 +235,14 @@
                             ]
                         }
                     },
+                    "storage": {}
+                },
+                "sc:marketplace": {
+                    "nonce": "0",
+                    "balance": "0",
                     "storage": {
                         "str:bidCutPercentage": "1000",
-                        "str:lastValidAuctionId": "1",
-                        "str:auctionById|u64:1": {
-                            "00-auctioned_token": "nested:str:NFT-123456|u64:1",
-                            "01-nr_auctioned_tokens": "biguint:1",
-                            "02-auction_type": "u8:1",
-                            "04-payment_token": "nested:str:EGLD|u64:0",
-                            "05-min_bid": "biguint:100",
-                            "06-max_bid": "u8:1|biguint:1000",
-                            "07-min_bid_diff": "biguint:150",
-                            "08-start_time": "u64:123,000",
-                            "09-deadline": "u64:123,456",
-                            "10-original_owner": "address:seller",
-                            "11-current_bid": "biguint:1000",
-                            "12-current_winner": "address:second_bidder",
-                            "13-marketplace_cut_percentage": "biguint:1000",
-                            "14-creator_royalties_percentage": "biguint:2000"
-                        }
+                        "str:lastValidAuctionId": "1"
                     },
                     "code": "file:../output/esdt-nft-marketplace.wasm"
                 },

@@ -67,19 +67,11 @@ pub trait TokenDistributionModule:
         &self,
         auction: &Auction<Self::Api>,
     ) -> BidSplitAmounts<Self::Api> {
-        let creator_royalties =
-            self.calculate_cut_amount(&auction.current_bid, &auction.creator_royalties_percentage);
-        let bid_cut_amount =
-            self.calculate_cut_amount(&auction.current_bid, &auction.marketplace_cut_percentage);
-        let mut seller_amount_to_send = auction.current_bid.clone();
-        seller_amount_to_send -= &creator_royalties;
-        seller_amount_to_send -= &bid_cut_amount;
-
-        BidSplitAmounts {
-            creator: creator_royalties,
-            marketplace: bid_cut_amount,
-            seller: seller_amount_to_send,
-        }
+        self.calculate_sale_split_values(
+            &auction.current_bid,
+            &auction.creator_royalties_percentage,
+            &auction.marketplace_cut_percentage,
+        )
     }
 
     fn calculate_accepted_offer_split(
@@ -88,17 +80,28 @@ pub trait TokenDistributionModule:
         creator_royalties_percentage: &BigUint,
         marketplace_cut_percentage: &BigUint,
     ) -> BidSplitAmounts<Self::Api> {
-        let creator_royalties =
-            self.calculate_cut_amount(&offer.payment.amount, creator_royalties_percentage);
-        let offer_cut_amount =
-            self.calculate_cut_amount(&offer.payment.amount, marketplace_cut_percentage);
-        let mut seller_amount_to_send = offer.payment.amount.clone();
+        self.calculate_sale_split_values(
+            &offer.payment.amount,
+            creator_royalties_percentage,
+            marketplace_cut_percentage,
+        )
+    }
+
+    fn calculate_sale_split_values(
+        &self,
+        amount: &BigUint,
+        creator_royalties_percentage: &BigUint,
+        marketplace_cut_percentage: &BigUint,
+    ) -> BidSplitAmounts<Self::Api> {
+        let creator_royalties = self.calculate_cut_amount(amount, creator_royalties_percentage);
+        let bid_cut_amount = self.calculate_cut_amount(amount, marketplace_cut_percentage);
+        let mut seller_amount_to_send = amount.clone();
         seller_amount_to_send -= &creator_royalties;
-        seller_amount_to_send -= &offer_cut_amount;
+        seller_amount_to_send -= &bid_cut_amount;
 
         BidSplitAmounts {
             creator: creator_royalties,
-            marketplace: offer_cut_amount,
+            marketplace: bid_cut_amount,
             seller: seller_amount_to_send,
         }
     }
@@ -113,29 +116,7 @@ pub trait TokenDistributionModule:
 
         if !auction.current_winner.is_zero() {
             let nft_info = self.get_nft_info(nft_type, nft_nonce);
-            let token_id = &auction.payment_token;
-            let nonce = auction.payment_nonce;
             let bid_split_amounts = self.calculate_winning_bid_split(auction);
-
-            // send part as cut for contract owner
-            let owner = self.blockchain().get_owner_address();
-            self.transfer_or_save_payment(&owner, token_id, nonce, &bid_split_amounts.marketplace);
-
-            // send part as royalties to creator
-            self.transfer_or_save_payment(
-                &nft_info.creator,
-                token_id,
-                nonce,
-                &bid_split_amounts.creator,
-            );
-
-            // send rest of the bid to original owner
-            self.transfer_or_save_payment(
-                &auction.original_owner,
-                token_id,
-                nonce,
-                &bid_split_amounts.seller,
-            );
 
             // send NFT to auction winner
             let nft_amount = BigUint::from(NFT_AMOUNT);
@@ -147,11 +128,17 @@ pub trait TokenDistributionModule:
                 },
                 _ => &auction.auctioned_tokens.amount,
             };
-            self.transfer_or_save_payment(
-                &auction.current_winner,
+
+            self.distribute_tokens_common(
                 &EgldOrEsdtTokenIdentifier::esdt(nft_type.clone()),
                 nft_nonce,
                 nft_amount_to_send,
+                &auction.payment_token,
+                auction.payment_nonce,
+                &nft_info.creator,
+                &auction.original_owner,
+                &auction.current_winner,
+                &bid_split_amounts,
             );
         } else {
             // return to original owner
@@ -179,38 +166,58 @@ pub trait TokenDistributionModule:
             marketplace_cut_percentage,
         );
 
-        // send part as cut for contract owner
-        let owner = self.blockchain().get_owner_address();
-        self.transfer_or_save_payment(
-            &owner,
+        self.distribute_tokens_common(
+            &EgldOrEsdtTokenIdentifier::esdt(nft_type.clone()),
+            nft_nonce,
+            &BigUint::from(NFT_AMOUNT),
             &offer.payment.token_identifier,
             offer.payment.token_nonce,
+            &nft_info.creator,
+            seller,
+            &offer.offer_owner,
+            &bid_split_amounts,
+        );
+    }
+
+    fn distribute_tokens_common(
+        &self,
+        nft_type: &EgldOrEsdtTokenIdentifier,
+        nft_nonce: u64,
+        nft_amount_to_send: &BigUint,
+        payment_token_id: &EgldOrEsdtTokenIdentifier,
+        payment_token_nonce: u64,
+        creator: &ManagedAddress,
+        original_owner: &ManagedAddress,
+        new_owner: &ManagedAddress,
+        bid_split_amounts: &BidSplitAmounts<Self::Api>,
+    ) {
+        // send part as cut for contract owner
+        let sc_owner = self.blockchain().get_owner_address();
+        self.transfer_or_save_payment(
+            &sc_owner,
+            payment_token_id,
+            payment_token_nonce,
             &bid_split_amounts.marketplace,
         );
 
         // send part as royalties to creator
         self.transfer_or_save_payment(
-            &nft_info.creator,
-            &offer.payment.token_identifier,
-            offer.payment.token_nonce,
+            creator,
+            payment_token_id,
+            payment_token_nonce,
             &bid_split_amounts.creator,
         );
 
         // send rest of the bid to original owner
         self.transfer_or_save_payment(
-            seller,
-            &offer.payment.token_identifier,
-            offer.payment.token_nonce,
+            original_owner,
+            payment_token_id,
+            payment_token_nonce,
             &bid_split_amounts.seller,
         );
 
         // send NFT to new owner
-        self.transfer_or_save_payment(
-            &offer.offer_owner,
-            &EgldOrEsdtTokenIdentifier::esdt(nft_type.clone()),
-            nft_nonce,
-            &BigUint::from(NFT_AMOUNT),
-        );
+        self.transfer_or_save_payment(new_owner, nft_type, nft_nonce, nft_amount_to_send);
     }
 
     fn transfer_or_save_payment(

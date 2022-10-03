@@ -84,7 +84,7 @@ pub trait BiddingModule:
         let gas_before = self.blockchain().get_gas_left();
         if gas_before >= MIN_GAS_TO_END_AUCTION
             && max_bid_reached
-            && auction.auction_type == AuctionType::SftOnePerPayment
+            && auction.auction_type != AuctionType::SftOnePerPayment
         {
             self.end_auction_common(auction_id, auction);
         }
