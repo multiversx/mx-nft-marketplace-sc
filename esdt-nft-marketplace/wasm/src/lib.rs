@@ -27,6 +27,7 @@ elrond_wasm_node::wasm_endpoints! {
         setCutPercentage
         unpause
         withdraw
+        withdrawAuctionAndAcceptOffer
         withdrawOffer
     )
 }
