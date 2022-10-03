@@ -105,7 +105,7 @@ pub trait OfferModule:
         let offer = self.try_get_offer(offer_id);
         let seller = self.blockchain().get_caller();
         let current_time = self.blockchain().get_block_timestamp();
-        require!(current_time <= offer.deadline, "Offer has expired");
+        require!(current_time < offer.deadline, "Offer has expired");
         require!(offer.offer_owner != seller, "Cannot accept your own offer");
 
         require!(
@@ -118,7 +118,7 @@ pub trait OfferModule:
         );
         require!(
             offer_nft.amount == 1u64,
-            "The sent token amount is different than 1"
+            "You can only send NFTs"
         );
 
         let marketplace_cut_percentage = self.bid_cut_percentage().get();
