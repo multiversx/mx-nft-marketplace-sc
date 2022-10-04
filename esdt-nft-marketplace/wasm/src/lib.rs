@@ -19,8 +19,6 @@ elrond_wasm_node::wasm_endpoints! {
         getLastValidAuctionId
         getLastValidOfferId
         getMarketplaceCutPercentage
-        getOffersByAddress
-        getOffersByToken
         isPaused
         pause
         sendOffer

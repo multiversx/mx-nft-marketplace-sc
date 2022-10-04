@@ -102,12 +102,6 @@
                     "storage": {
                         "str:bidCutPercentage": "1000",
                         "str:lastValidOfferId": "1",
-                        "str:offersByAddress|address:first_bidder|str:.len": "1",
-                        "str:offersByAddress|address:first_bidder|str:.item|u32:1": "1",
-                        "str:offersByAddress|address:first_bidder|str:.index|u32:0|u32:1": "1",
-                        "str:offersByToken|nested:str:NFT-123456|u64:1|str:.len": "1",
-                        "str:offersByToken|nested:str:NFT-123456|u64:1|str:.item|u32:1": "1",
-                        "str:offersByToken|nested:str:NFT-123456|u64:1|str:.index|u32:0|u32:1": "1",
                         "str:offerById|u64:1": {
                             "01-offer_token": "nested:str:NFT-123456|u64:1|biguint:1",
                             "01-payment": "nested:str:EGLD|u64:0|biguint:10",

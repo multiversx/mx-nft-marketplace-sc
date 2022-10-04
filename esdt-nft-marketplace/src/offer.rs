@@ -44,11 +44,10 @@ pub trait OfferModule:
         );
         require!(deadline > current_time, "Deadline can't be in the past!");
 
-        let offer_token = EsdtTokenPayment::new(
-            desired_nft_id.clone(),
-            desired_nft_nonce,
-            BigUint::from(NFT_AMOUNT),
-        );
+        self.check_nft_in_marketplace(&desired_nft_id, desired_nft_nonce, opt_auction_id);
+
+        let offer_token =
+            EsdtTokenPayment::new(desired_nft_id, desired_nft_nonce, BigUint::from(NFT_AMOUNT));
 
         let offer = Offer {
             offer_token,
@@ -58,6 +57,21 @@ pub trait OfferModule:
             offer_owner: caller,
         };
 
+        let offer_id = self.last_valid_offer_id().get() + 1;
+        self.last_valid_offer_id().set(&offer_id);
+        self.offer_by_id(offer_id).set(&offer);
+
+        self.emit_offer_token_event(offer_id, offer);
+
+        offer_id
+    }
+
+    fn check_nft_in_marketplace(
+        &self,
+        desired_nft_id: &TokenIdentifier,
+        desired_nft_nonce: u64,
+        opt_auction_id: OptionalValue<u64>,
+    ) {
         let token_amount_in_marketplace = self.blockchain().get_sc_balance(
             &EgldOrEsdtTokenIdentifier::esdt(desired_nft_id.clone()),
             desired_nft_nonce,
@@ -67,7 +81,7 @@ pub trait OfferModule:
                 OptionalValue::Some(auction_id) => {
                     let auction = self.try_get_auction(auction_id);
                     require!(
-                        auction.auctioned_tokens.token_identifier == desired_nft_id,
+                        &auction.auctioned_tokens.token_identifier == desired_nft_id,
                         "The auction does not contain the NFT"
                     );
                     require!(
@@ -78,20 +92,6 @@ pub trait OfferModule:
                 OptionalValue::None => sc_panic!("Must provide the auction id"),
             };
         }
-
-        let offer_id = self.last_valid_offer_id().get() + 1;
-        self.last_valid_offer_id().set(&offer_id);
-        self.offer_by_id(offer_id).set(&offer);
-        self.offers_by_address(&offer.offer_owner).insert(offer_id);
-        self.offers_by_token(
-            &offer.offer_token.token_identifier,
-            offer.offer_token.token_nonce,
-        )
-        .insert(offer_id);
-
-        self.emit_offer_token_event(offer_id, offer);
-
-        offer_id
     }
 
     #[endpoint(withdrawOffer)]
@@ -112,15 +112,7 @@ pub trait OfferModule:
             &offer.payment.amount,
         );
 
-        self.offers_by_token(
-            &offer.offer_token.token_identifier,
-            offer.offer_token.token_nonce,
-        )
-        .swap_remove(&offer_id);
-        self.offers_by_address(&offer.offer_owner)
-            .swap_remove(&offer_id);
         self.offer_by_id(offer_id).clear();
-
         self.emit_withdraw_offer_event(offer_id, offer);
     }
 
@@ -168,13 +160,6 @@ pub trait OfferModule:
 
         let marketplace_cut_percentage = self.bid_cut_percentage().get();
         self.distribute_tokens_after_offer_accept(&offer, &seller, &marketplace_cut_percentage);
-        self.offers_by_token(
-            &offer.offer_token.token_identifier,
-            offer.offer_token.token_nonce,
-        )
-        .swap_remove(&offer_id);
-        self.offers_by_address(&offer.offer_owner)
-            .swap_remove(&offer_id);
         self.offer_by_id(offer_id).clear();
 
         self.emit_accept_offer_event(offer_id, offer, &seller);
@@ -201,16 +186,4 @@ pub trait OfferModule:
 
     #[storage_mapper("offerById")]
     fn offer_by_id(&self, offer_id: u64) -> SingleValueMapper<Offer<Self::Api>>;
-
-    #[view(getOffersByAddress)]
-    #[storage_mapper("offersByAddress")]
-    fn offers_by_address(&self, address: &ManagedAddress) -> UnorderedSetMapper<u64>;
-
-    #[view(getOffersByToken)]
-    #[storage_mapper("offersByToken")]
-    fn offers_by_token(
-        &self,
-        token_id: &TokenIdentifier,
-        token_nonce: u64,
-    ) -> UnorderedSetMapper<u64>;
 }
