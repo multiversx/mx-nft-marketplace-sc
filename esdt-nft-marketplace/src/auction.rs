@@ -3,7 +3,6 @@ elrond_wasm::derive_imports!();
 
 pub const PERCENTAGE_TOTAL: u64 = 10_000; // 100%
 pub const NFT_AMOUNT: u32 = 1; // Token has to be unique to be considered NFT
-pub const MIN_GAS_TO_END_AUCTION: u64 = 2_000_000;
 
 #[derive(TopEncode, TopDecode, TypeAbi, Clone)]
 pub struct Auction<M: ManagedTypeApi> {

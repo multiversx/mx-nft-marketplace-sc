@@ -155,14 +155,6 @@ pub trait OfferModule:
             auction.current_bid == BigUint::zero(),
             "NFT auction has active bids"
         );
-        let token_amount_in_marketplace = self.blockchain().get_sc_balance(
-            &EgldOrEsdtTokenIdentifier::esdt(offer.offer_token.token_identifier.clone()),
-            offer.offer_token.token_nonce,
-        );
-        require!(
-            token_amount_in_marketplace > 0u64,
-            "The NFT must be in the contract to accept the offer"
-        );
 
         self.withdraw_auction_common(auction_id, auction);
         self.accept_offer_common(offer_id, offer);
