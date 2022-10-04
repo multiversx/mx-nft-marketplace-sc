@@ -3,7 +3,6 @@ elrond_wasm::derive_imports!();
 
 pub const PERCENTAGE_TOTAL: u64 = 10_000; // 100%
 pub const NFT_AMOUNT: u32 = 1; // Token has to be unique to be considered NFT
-pub const MIN_GAS_TO_END_AUCTION:u64 = 2_000_000;
 
 #[derive(TopEncode, TopDecode, TypeAbi, Clone)]
 pub struct Auction<M: ManagedTypeApi> {
@@ -187,10 +186,12 @@ pub trait AuctionModule:
     #[endpoint]
     fn withdraw(&self, auction_id: u64) {
         self.require_not_paused();
-
         let auction = self.try_get_auction(auction_id);
-        let caller = self.blockchain().get_caller();
+        self.withdraw_auction_common(auction_id, auction);
+    }
 
+    fn withdraw_auction_common(&self, auction_id: u64, auction: Auction<Self::Api>) {
+        let caller = self.blockchain().get_caller();
         require!(
             auction.original_owner == caller,
             "Only the original owner can withdraw"

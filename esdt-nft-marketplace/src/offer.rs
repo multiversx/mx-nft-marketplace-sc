@@ -27,6 +27,7 @@ pub trait OfferModule:
         desired_nft_id: TokenIdentifier,
         desired_nft_nonce: u64,
         deadline: u64,
+        opt_auction_id: OptionalValue<u64>,
     ) -> u64 {
         self.require_not_paused();
         require!(
@@ -43,8 +44,11 @@ pub trait OfferModule:
         );
         require!(deadline > current_time, "Deadline can't be in the past!");
 
-        let offer_token =
-            EsdtTokenPayment::new(desired_nft_id, desired_nft_nonce, BigUint::from(NFT_AMOUNT));
+        let offer_token = EsdtTokenPayment::new(
+            desired_nft_id.clone(),
+            desired_nft_nonce,
+            BigUint::from(NFT_AMOUNT),
+        );
 
         let offer = Offer {
             offer_token,
@@ -53,6 +57,27 @@ pub trait OfferModule:
             deadline,
             offer_owner: caller,
         };
+
+        let token_amount_in_marketplace = self.blockchain().get_sc_balance(
+            &EgldOrEsdtTokenIdentifier::esdt(desired_nft_id.clone()),
+            desired_nft_nonce,
+        );
+        if token_amount_in_marketplace > 0 {
+            match opt_auction_id {
+                OptionalValue::Some(auction_id) => {
+                    let auction = self.try_get_auction(auction_id);
+                    require!(
+                        auction.auctioned_tokens.token_identifier == desired_nft_id,
+                        "The auction does not contain the NFT"
+                    );
+                    require!(
+                        auction.current_bid == BigUint::zero(),
+                        "NFT auction has active bids"
+                    );
+                }
+                OptionalValue::None => sc_panic!("Must provide the auction id"),
+            };
+        }
 
         let offer_id = self.last_valid_offer_id().get() + 1;
         self.last_valid_offer_id().set(&offer_id);
@@ -71,6 +96,7 @@ pub trait OfferModule:
 
     #[endpoint(withdrawOffer)]
     fn withdraw_offer(&self, offer_id: u64) {
+        self.require_not_paused();
         let offer = self.try_get_offer(offer_id);
         let caller = self.blockchain().get_caller();
 
@@ -101,13 +127,10 @@ pub trait OfferModule:
     #[payable("*")]
     #[endpoint(acceptOffer)]
     fn accept_offer(&self, offer_id: u64) {
+        self.require_not_paused();
         let offer_nft = self.call_value().single_esdt();
         let offer = self.try_get_offer(offer_id);
-        let seller = self.blockchain().get_caller();
-        let current_time = self.blockchain().get_block_timestamp();
-        require!(current_time < offer.deadline, "Offer has expired");
-        require!(offer.offer_owner != seller, "Cannot accept your own offer");
-
+        require!(offer_nft.amount == NFT_AMOUNT, "You can only send NFTs");
         require!(
             offer_nft.token_identifier == offer.offer_token.token_identifier,
             "The sent token type is different from the offer"
@@ -116,10 +139,32 @@ pub trait OfferModule:
             offer_nft.token_nonce == offer.offer_token.token_nonce,
             "The sent token nonce is different from the offer"
         );
+        self.accept_offer_common(offer_id, offer);
+    }
+
+    #[endpoint(withdrawAuctionAndAcceptOffer)]
+    fn withdraw_auction_and_accept_offer(&self, auction_id: u64, offer_id: u64) {
+        self.require_not_paused();
+        let auction = self.try_get_auction(auction_id);
+        let offer = self.try_get_offer(offer_id);
         require!(
-            offer_nft.amount == NFT_AMOUNT,
-            "You can only send NFTs"
+            auction.auctioned_tokens.token_identifier == offer.offer_token.token_identifier,
+            "The token id from the auction does not match the one from the offer"
         );
+        require!(
+            auction.current_bid == BigUint::zero(),
+            "NFT auction has active bids"
+        );
+
+        self.withdraw_auction_common(auction_id, auction);
+        self.accept_offer_common(offer_id, offer);
+    }
+
+    fn accept_offer_common(&self, offer_id: u64, offer: Offer<Self::Api>) {
+        let seller = self.blockchain().get_caller();
+        let current_time = self.blockchain().get_block_timestamp();
+        require!(current_time < offer.deadline, "Offer has expired");
+        require!(offer.offer_owner != seller, "Cannot accept your own offer");
 
         let marketplace_cut_percentage = self.bid_cut_percentage().get();
         self.distribute_tokens_after_offer_accept(&offer, &seller, &marketplace_cut_percentage);

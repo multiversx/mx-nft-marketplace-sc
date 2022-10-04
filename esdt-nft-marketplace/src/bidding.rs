@@ -1,6 +1,6 @@
 elrond_wasm::imports!();
 
-use crate::auction::{Auction, AuctionType, MIN_GAS_TO_END_AUCTION, NFT_AMOUNT};
+use crate::auction::{Auction, AuctionType, NFT_AMOUNT};
 
 #[elrond_wasm::module]
 pub trait BiddingModule:
@@ -81,11 +81,7 @@ pub trait BiddingModule:
         self.emit_bid_event(auction_id, auction.clone());
 
         // end auction in case the max bid has been reached
-        let gas_before = self.blockchain().get_gas_left();
-        if gas_before >= MIN_GAS_TO_END_AUCTION
-            && max_bid_reached
-            && auction.auction_type != AuctionType::SftOnePerPayment
-        {
+        if max_bid_reached && auction.auction_type != AuctionType::SftOnePerPayment {
             self.end_auction_common(auction_id, auction);
         }
     }
