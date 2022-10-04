@@ -58,7 +58,7 @@ pub trait OfferModule:
         };
 
         let offer_id = self.last_valid_offer_id().get() + 1;
-        self.last_valid_offer_id().set(&offer_id);
+        self.last_valid_offer_id().set(offer_id);
         self.offer_by_id(offer_id).set(&offer);
 
         self.emit_offer_token_event(offer_id, offer);
@@ -120,6 +120,7 @@ pub trait OfferModule:
     #[endpoint(acceptOffer)]
     fn accept_offer(&self, offer_id: u64) {
         self.require_not_paused();
+        let caller = self.blockchain().get_caller();
         let offer_nft = self.call_value().single_esdt();
         let offer = self.try_get_offer(offer_id);
         require!(offer_nft.amount == NFT_AMOUNT, "You can only send NFTs");
@@ -131,12 +132,13 @@ pub trait OfferModule:
             offer_nft.token_nonce == offer.offer_token.token_nonce,
             "The sent token nonce is different from the offer"
         );
-        self.accept_offer_common(offer_id, offer);
+        self.accept_offer_common(&caller, offer_id, offer);
     }
 
     #[endpoint(withdrawAuctionAndAcceptOffer)]
     fn withdraw_auction_and_accept_offer(&self, auction_id: u64, offer_id: u64) {
         self.require_not_paused();
+        let caller = self.blockchain().get_caller();
         let auction = self.try_get_auction(auction_id);
         let offer = self.try_get_offer(offer_id);
         require!(
@@ -148,21 +150,20 @@ pub trait OfferModule:
             "NFT auction has active bids"
         );
 
-        self.withdraw_auction_common(auction_id, auction);
-        self.accept_offer_common(offer_id, offer);
+        self.withdraw_auction_common(&caller, auction_id, auction);
+        self.accept_offer_common(&caller, offer_id, offer);
     }
 
-    fn accept_offer_common(&self, offer_id: u64, offer: Offer<Self::Api>) {
-        let seller = self.blockchain().get_caller();
+    fn accept_offer_common(&self, seller: &ManagedAddress, offer_id: u64, offer: Offer<Self::Api>) {
         let current_time = self.blockchain().get_block_timestamp();
         require!(current_time < offer.deadline, "Offer has expired");
-        require!(offer.offer_owner != seller, "Cannot accept your own offer");
+        require!(&offer.offer_owner != seller, "Cannot accept your own offer");
 
         let marketplace_cut_percentage = self.bid_cut_percentage().get();
-        self.distribute_tokens_after_offer_accept(&offer, &seller, &marketplace_cut_percentage);
+        self.distribute_tokens_after_offer_accept(&offer, seller, &marketplace_cut_percentage);
         self.offer_by_id(offer_id).clear();
 
-        self.emit_accept_offer_event(offer_id, offer, &seller);
+        self.emit_accept_offer_event(offer_id, offer, seller);
     }
 
     fn get_transfer_data(&self, address: &ManagedAddress, data: &'static [u8]) -> &[u8] {
