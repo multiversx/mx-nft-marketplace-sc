@@ -1,8 +1,6 @@
 elrond_wasm::imports!();
 elrond_wasm::derive_imports!();
 
-use crate::auction::NFT_AMOUNT;
-
 #[derive(TopEncode, TopDecode, TypeAbi)]
 pub struct Offer<M: ManagedTypeApi> {
     pub offer_token: EsdtTokenPayment<M>,
@@ -26,6 +24,7 @@ pub trait OfferModule:
         &self,
         desired_nft_id: TokenIdentifier,
         desired_nft_nonce: u64,
+        desired_amount: BigUint,
         deadline: u64,
         opt_auction_id: OptionalValue<u64>,
     ) -> u64 {
@@ -34,6 +33,7 @@ pub trait OfferModule:
             desired_nft_nonce > 0,
             "Can't place offers for fungible tokens"
         );
+        require!(desired_amount >= 0, "Amount must be greater than 0");
 
         let payment = self.call_value().egld_or_single_esdt();
         let caller = self.blockchain().get_caller();
@@ -44,10 +44,14 @@ pub trait OfferModule:
         );
         require!(deadline > current_time, "Deadline can't be in the past!");
 
-        self.check_nft_in_marketplace(&desired_nft_id, desired_nft_nonce, opt_auction_id);
+        self.check_nft_in_marketplace(
+            &desired_nft_id,
+            desired_nft_nonce,
+            &desired_amount,
+            opt_auction_id,
+        );
 
-        let offer_token =
-            EsdtTokenPayment::new(desired_nft_id, desired_nft_nonce, BigUint::from(NFT_AMOUNT));
+        let offer_token = EsdtTokenPayment::new(desired_nft_id, desired_nft_nonce, desired_amount);
 
         let offer = Offer {
             offer_token,
@@ -70,13 +74,14 @@ pub trait OfferModule:
         &self,
         desired_nft_id: &TokenIdentifier,
         desired_nft_nonce: u64,
+        desired_amount: &BigUint,
         opt_auction_id: OptionalValue<u64>,
     ) {
         let token_amount_in_marketplace = self.blockchain().get_sc_balance(
             &EgldOrEsdtTokenIdentifier::esdt(desired_nft_id.clone()),
             desired_nft_nonce,
         );
-        if token_amount_in_marketplace > 0 {
+        if &token_amount_in_marketplace >= desired_amount {
             match opt_auction_id {
                 OptionalValue::Some(auction_id) => {
                     let auction = self.try_get_auction(auction_id);
@@ -123,7 +128,10 @@ pub trait OfferModule:
         let caller = self.blockchain().get_caller();
         let offer_nft = self.call_value().single_esdt();
         let offer = self.try_get_offer(offer_id);
-        require!(offer_nft.amount == NFT_AMOUNT, "You can only send NFTs");
+        require!(
+            offer_nft.amount == offer.offer_token.amount,
+            "The token amount is different from the offer"
+        );
         require!(
             offer_nft.token_identifier == offer.offer_token.token_identifier,
             "The sent token type is different from the offer"
@@ -144,6 +152,10 @@ pub trait OfferModule:
         require!(
             auction.auctioned_tokens.token_identifier == offer.offer_token.token_identifier,
             "The token id from the auction does not match the one from the offer"
+        );
+        require!(
+            auction.auctioned_tokens.amount == offer.offer_token.amount,
+            "The amount from the auction does not match the one from the offer"
         );
         require!(
             auction.current_bid == BigUint::zero(),

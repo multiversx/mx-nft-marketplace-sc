@@ -169,7 +169,7 @@ pub trait TokenDistributionModule:
         self.distribute_tokens_common(
             &EgldOrEsdtTokenIdentifier::esdt(nft_type.clone()),
             nft_nonce,
-            &BigUint::from(NFT_AMOUNT),
+            &offer.offer_token.amount,
             &offer.payment.token_identifier,
             offer.payment.token_nonce,
             &nft_info.creator,
