@@ -33,7 +33,7 @@ pub trait OfferModule:
             desired_nft_nonce > 0,
             "Can't place offers for fungible tokens"
         );
-        require!(desired_amount >= 0, "Amount must be greater than 0");
+        require!(desired_amount > 0, "Amount must be greater than 0");
 
         let payment = self.call_value().egld_or_single_esdt();
         let caller = self.blockchain().get_caller();
