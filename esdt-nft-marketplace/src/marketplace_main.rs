@@ -14,7 +14,7 @@ pub mod token_distribution;
 #[elrond_wasm::contract]
 pub trait EsdtNftMarketplace:
     auction::AuctionModule
-    + offer::OfferModule
+    // + offer::OfferModule
     + bidding::BiddingModule
     + token_distribution::TokenDistributionModule
     + events::EventsModule
