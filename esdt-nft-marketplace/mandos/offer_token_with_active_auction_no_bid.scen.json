@@ -1,0 +1,108 @@
+{
+    "name": "auction token",
+    "gasSchedule": "v4",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "auction_token.scen.json"
+        },
+        {
+            "step": "scCall",
+            "txId": "offer token success",
+            "tx": {
+                "from": "address:first_bidder",
+                "to": "sc:marketplace",
+                "value": "10",
+                "function": "sendOffer",
+                "arguments": [
+                    "str:NFT-123456",
+                    "1",
+                    "1",
+                    "125,000",
+                    "1"
+                ],
+                "gasLimit": "15,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [ "1" ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "withdraw and accept",
+            "tx": {
+                "from": "address:seller",
+                "to": "sc:marketplace",
+                "value": "0",
+                "function": "withdrawAuctionAndAcceptOffer",
+                "arguments": [
+                    "1",
+                    "1"
+                ],
+                "gasLimit": "15,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:first_bidder": {
+                    "nonce": "1",
+                    "balance": "990",
+                    "esdt": {
+                        "str:NFT-123456": {
+                            "instances": [
+                                {
+                                    "nonce": "1",
+                                    "balance": "1",
+                                    "creator": "address:nft_creator",
+                                    "royalties": "2000"
+                                }
+                            ]
+                        }
+                    },
+                    "storage": {}
+                },
+                "address:seller": {
+                    "nonce": "2",
+                    "balance": "7",
+                    "esdt": {
+                        "str:SFT-123456": {
+                            "instances": [
+                                {
+                                    "nonce": "1",
+                                    "balance": "10",
+                                    "creator": "address:nft_creator",
+                                    "royalties": "2000"
+                                }
+                            ]
+                        }
+                    },
+                    "storage": {}
+                },
+                "sc:marketplace": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "str:bidCutPercentage": "1000",
+                        "str:lastValidAuctionId": "1",
+                        "str:lastValidOfferId": "1"
+                    },
+                    "code": "file:../output/esdt-nft-marketplace.wasm"
+                },
+                "+": {}
+            }
+        }
+    ]
+}

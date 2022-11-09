@@ -192,7 +192,12 @@ pub trait AuctionModule:
         self.send_auction_nft(&caller, auction)
     }
 
-    fn withdraw_auction_common(&self, caller: &ManagedAddress, auction_id: u64, auction: Auction<Self::Api>) {
+    fn withdraw_auction_common(
+        &self,
+        caller: &ManagedAddress,
+        auction_id: u64,
+        auction: Auction<Self::Api>,
+    ) {
         require!(
             &auction.original_owner == caller,
             "Only the original owner can withdraw"

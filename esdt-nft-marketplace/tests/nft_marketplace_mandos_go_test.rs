@@ -117,3 +117,33 @@ fn withdraw_go() {
 fn withdraw_after_end_auction_go() {
     elrond_wasm_debug::mandos_go("mandos/withdraw_after_end_auction.scen.json");
 }
+
+#[test]
+fn offer_token_go() {
+    elrond_wasm_debug::mandos_go("mandos/offer_token.scen.json");
+}
+
+#[test]
+fn offer_token_accept_go() {
+    elrond_wasm_debug::mandos_go("mandos/offer_token_accept.scen.json");
+}
+
+#[test]
+fn offer_token_with_active_auction_bid_after_offer_go() {
+    elrond_wasm_debug::mandos_go("mandos/offer_token_with_active_auction_bid_after_offer.scen.json");
+}
+
+#[test]
+fn offer_token_with_active_auction_no_bid_go() {
+    elrond_wasm_debug::mandos_go("mandos/offer_token_with_active_auction_no_bid.scen.json");
+}
+
+#[test]
+fn offer_token_with_active_auction_with_bid_go() {
+    elrond_wasm_debug::mandos_go("mandos/offer_token_with_active_auction_with_bid.scen.json");
+}
+
+#[test]
+fn offer_token_withdraw_reoffer_go() {
+    elrond_wasm_debug::mandos_go("mandos/offer_token_withdraw_reoffer.scen.json");
+}
