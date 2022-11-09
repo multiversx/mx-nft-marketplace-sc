@@ -22,8 +22,8 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "status": "0",
-                "message": "",
+                "status": "4",
+                "message": "str:Auction does not exist",
                 "gas": "*",
                 "refund": "*"
             }
