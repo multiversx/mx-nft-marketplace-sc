@@ -1,7 +1,6 @@
 elrond_wasm::imports!();
 elrond_wasm::derive_imports!();
 
-use crate::offer::Offer;
 use super::auction::{Auction, AuctionType};
 
 #[allow(clippy::too_many_arguments)]
@@ -73,57 +72,6 @@ pub trait EventsModule {
         );
     }
 
-    fn emit_offer_token_event(self, offer_id: u64, offer: Offer<Self::Api>) {
-        self.offer_token_event(
-            offer_id,
-            &offer.offer_token.token_identifier,
-            offer.offer_token.token_nonce,
-            &offer.offer_token.amount,
-            &offer.payment.token_identifier,
-            offer.payment.token_nonce,
-            &offer.payment.amount,
-            &offer.offer_owner,
-            offer.start_time,
-            offer.deadline,
-        )
-    }
-
-    fn emit_withdraw_offer_event(self, offer_id: u64, offer: Offer<Self::Api>) {
-        self.withdraw_offer_token_event(
-            offer_id,
-            &offer.offer_token.token_identifier,
-            offer.offer_token.token_nonce,
-            &offer.offer_token.amount,
-            &offer.payment.token_identifier,
-            offer.payment.token_nonce,
-            &offer.payment.amount,
-            &offer.offer_owner,
-            offer.start_time,
-            offer.deadline,
-        )
-    }
-
-    fn emit_accept_offer_event(
-        self,
-        offer_id: u64,
-        offer: Offer<Self::Api>,
-        seller: &ManagedAddress,
-    ) {
-        self.accept_offer_token_event(
-            offer_id,
-            &offer.offer_token.token_identifier,
-            offer.offer_token.token_nonce,
-            &offer.offer_token.amount,
-            &offer.payment.token_identifier,
-            offer.payment.token_nonce,
-            &offer.payment.amount,
-            &offer.offer_owner,
-            seller,
-            offer.start_time,
-            offer.deadline,
-        )
-    }
-
     #[event("auction_token_event")]
     fn auction_token_event(
         &self,
@@ -183,51 +131,5 @@ pub trait EventsModule {
         #[indexed] auction_id: u64,
         #[indexed] nr_auctioned_tokens: &BigUint,
         #[indexed] seller: &ManagedAddress,
-    );
-
-    #[event("offer_token_event")]
-    fn offer_token_event(
-        &self,
-        #[indexed] offer_id: u64,
-        #[indexed] offer_token_id: &TokenIdentifier,
-        #[indexed] offer_token_nonce: u64,
-        #[indexed] offer_amount: &BigUint,
-        #[indexed] payment_token_type: &EgldOrEsdtTokenIdentifier,
-        #[indexed] payment_token_nonce: u64,
-        #[indexed] payment_amount: &BigUint,
-        #[indexed] buyer: &ManagedAddress,
-        #[indexed] start_time: u64,
-        #[indexed] deadline: u64,
-    );
-
-    #[event("withdraw_offer_token_event")]
-    fn withdraw_offer_token_event(
-        &self,
-        #[indexed] offer_id: u64,
-        #[indexed] offer_token_id: &TokenIdentifier,
-        #[indexed] offer_token_nonce: u64,
-        #[indexed] offer_amount: &BigUint,
-        #[indexed] payment_token_type: &EgldOrEsdtTokenIdentifier,
-        #[indexed] payment_token_nonce: u64,
-        #[indexed] payment_amount: &BigUint,
-        #[indexed] buyer: &ManagedAddress,
-        #[indexed] start_time: u64,
-        #[indexed] deadline: u64,
-    );
-
-    #[event("accept_offer_token_event")]
-    fn accept_offer_token_event(
-        &self,
-        #[indexed] offer_id: u64,
-        #[indexed] offer_token_id: &TokenIdentifier,
-        #[indexed] offer_token_nonce: u64,
-        #[indexed] offer_amount: &BigUint,
-        #[indexed] payment_token_type: &EgldOrEsdtTokenIdentifier,
-        #[indexed] payment_token_nonce: u64,
-        #[indexed] payment_amount: &BigUint,
-        #[indexed] buyer: &ManagedAddress,
-        #[indexed] seller: &ManagedAddress,
-        #[indexed] start_time: u64,
-        #[indexed] deadline: u64,
     );
 }

@@ -1,9 +1,6 @@
 elrond_wasm::imports!();
 
-use crate::{
-    auction::{Auction, AuctionType, NFT_AMOUNT, PERCENTAGE_TOTAL},
-    offer::Offer,
-};
+use crate::auction::{Auction, AuctionType, NFT_AMOUNT, PERCENTAGE_TOTAL};
 
 pub struct BidSplitAmounts<M: ManagedTypeApi> {
     pub creator: BigUint<M>,
@@ -74,19 +71,6 @@ pub trait TokenDistributionModule:
         )
     }
 
-    fn calculate_accepted_offer_split(
-        &self,
-        offer: &Offer<Self::Api>,
-        creator_royalties_percentage: &BigUint,
-        marketplace_cut_percentage: &BigUint,
-    ) -> BidSplitAmounts<Self::Api> {
-        self.calculate_sale_split_values(
-            &offer.payment.amount,
-            creator_royalties_percentage,
-            marketplace_cut_percentage,
-        )
-    }
-
     fn calculate_sale_split_values(
         &self,
         amount: &BigUint,
@@ -149,34 +133,6 @@ pub trait TokenDistributionModule:
                 &auction.auctioned_tokens.amount,
             );
         }
-    }
-
-    fn distribute_tokens_after_offer_accept(
-        &self,
-        offer: &Offer<Self::Api>,
-        seller: &ManagedAddress,
-        marketplace_cut_percentage: &BigUint,
-    ) {
-        let nft_type = &offer.offer_token.token_identifier;
-        let nft_nonce = offer.offer_token.token_nonce;
-        let nft_info = self.get_nft_info(nft_type, nft_nonce);
-        let bid_split_amounts = self.calculate_accepted_offer_split(
-            offer,
-            &nft_info.royalties,
-            marketplace_cut_percentage,
-        );
-
-        self.distribute_tokens_common(
-            &EgldOrEsdtTokenIdentifier::esdt(nft_type.clone()),
-            nft_nonce,
-            &offer.offer_token.amount,
-            &offer.payment.token_identifier,
-            offer.payment.token_nonce,
-            &nft_info.creator,
-            seller,
-            &offer.offer_owner,
-            &bid_split_amounts,
-        );
     }
 
     fn distribute_tokens_common(
