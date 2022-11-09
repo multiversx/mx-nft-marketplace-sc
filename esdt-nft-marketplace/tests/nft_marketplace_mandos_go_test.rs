@@ -29,6 +29,16 @@ fn auction_sft_sell_one_by_one_go() {
 }
 
 #[test]
+fn auction_with_min_bid_delta_go() {
+    elrond_wasm_debug::mandos_go("mandos/auction_with_min_bid_delta.scen.json");
+}
+
+#[test]
+fn auction_with_min_bid_delta_buy_now_go() {
+    elrond_wasm_debug::mandos_go("mandos/auction_with_min_bid_delta_buy_now.scen.json");
+}
+
+#[test]
 fn auction_token_go() {
     elrond_wasm_debug::mandos_go("mandos/auction_token.scen.json");
 }
@@ -66,6 +76,11 @@ fn bid_sft_sell_all_second_go() {
 #[test]
 fn buy_sft_sell_one_by_one_go() {
     elrond_wasm_debug::mandos_go("mandos/buy_sft_sell_one_by_one.scen.json");
+}
+
+#[test]
+fn bid_sft_sell_one_by_one_multiple_go() {
+    elrond_wasm_debug::mandos_go("mandos/bid_sft_sell_one_by_one_multiple.scen.json");
 }
 
 #[test]

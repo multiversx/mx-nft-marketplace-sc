@@ -37,6 +37,6 @@ pub trait EsdtNftMarketplace:
         );
 
         self.bid_cut_percentage()
-            .set(&BigUint::from(new_cut_percentage));
+            .set(BigUint::from(new_cut_percentage));
     }
 }
