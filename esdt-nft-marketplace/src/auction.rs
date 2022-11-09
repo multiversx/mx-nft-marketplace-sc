@@ -4,7 +4,7 @@ elrond_wasm::derive_imports!();
 pub const PERCENTAGE_TOTAL: u64 = 10_000; // 100%
 pub const NFT_AMOUNT: u32 = 1; // Token has to be unique to be considered NFT
 
-#[derive(TopEncode, TopDecode, TypeAbi)]
+#[derive(TopEncode, TopDecode, TypeAbi, Clone)]
 pub struct Auction<M: ManagedTypeApi> {
     pub auctioned_tokens: EsdtTokenPayment<M>,
     pub auction_type: AuctionType,
@@ -24,7 +24,7 @@ pub struct Auction<M: ManagedTypeApi> {
     pub creator_royalties_percentage: BigUint<M>,
 }
 
-#[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, TypeAbi, PartialEq)]
+#[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, TypeAbi, PartialEq, Clone)]
 pub enum AuctionType {
     None,
     Nft,
@@ -115,7 +115,7 @@ pub trait AuctionModule:
         };
 
         let auction_id = self.last_valid_auction_id().get() + 1;
-        self.last_valid_auction_id().set(&auction_id);
+        self.last_valid_auction_id().set(auction_id);
 
         let auction_type = if nft_amount > NFT_AMOUNT {
             match sft_max_one_per_payment {
@@ -173,6 +173,10 @@ pub trait AuctionModule:
             "Cannot end this type of auction"
         );
 
+        self.end_auction_common(auction_id, auction);
+    }
+
+    fn end_auction_common(&self, auction_id: u64, auction: Auction<Self::Api>) {
         self.distribute_tokens_after_auction_end(&auction, None);
         self.auction_by_id(auction_id).clear();
 
@@ -182,32 +186,32 @@ pub trait AuctionModule:
     #[endpoint]
     fn withdraw(&self, auction_id: u64) {
         self.require_not_paused();
-
-        let auction = self.try_get_auction(auction_id);
         let caller = self.blockchain().get_caller();
+        let auction = self.try_get_auction(auction_id);
+        self.withdraw_auction_common(&caller, auction_id, auction.clone());
+        self.send_auction_nft(&caller, auction)
+    }
 
+    fn withdraw_auction_common(&self, caller: &ManagedAddress, auction_id: u64, auction: Auction<Self::Api>) {
         require!(
-            auction.original_owner == caller,
+            &auction.original_owner == caller,
             "Only the original owner can withdraw"
         );
         require!(
             auction.current_bid == 0 || auction.auction_type == AuctionType::SftOnePerPayment,
             "Can't withdraw, NFT already has bids"
         );
-
         self.auction_by_id(auction_id).clear();
-
-        let nft_type = &auction.auctioned_tokens.token_identifier;
-        let nft_nonce = auction.auctioned_tokens.token_nonce;
-        let nft_amount = &auction.auctioned_tokens.amount;
-        self.transfer_or_save_payment(
-            &caller,
-            &EgldOrEsdtTokenIdentifier::esdt(nft_type.clone()),
-            nft_nonce,
-            nft_amount,
-        );
-
         self.emit_withdraw_event(auction_id, auction);
+    }
+
+    fn send_auction_nft(&self, caller: &ManagedAddress, auction: Auction<Self::Api>) {
+        self.transfer_or_save_payment(
+            caller,
+            &EgldOrEsdtTokenIdentifier::esdt(auction.auctioned_tokens.token_identifier),
+            auction.auctioned_tokens.token_nonce,
+            &auction.auctioned_tokens.amount,
+        );
     }
 
     #[view(getFullAuctionData)]
