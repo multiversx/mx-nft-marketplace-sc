@@ -7,7 +7,8 @@ pub trait TokenWhitelistModule {
     fn add_tokens_to_whitelist(&self, tokens_to_add: MultiValueEncoded<EgldOrEsdtTokenIdentifier>) {
         let mut whitelisted_tokens_mapper = self.whitelisted_tokens();
         for token_id in tokens_to_add {
-            whitelisted_tokens_mapper.insert(token_id);
+            require!(token_id.is_valid(), "Whitelisted token is not valid");
+            let _ = whitelisted_tokens_mapper.insert(token_id);
         }
     }
 
@@ -19,7 +20,7 @@ pub trait TokenWhitelistModule {
     ) {
         let mut whitelisted_tokens_mapper = self.whitelisted_tokens();
         for token_id in tokens_to_remove {
-            whitelisted_tokens_mapper.swap_remove(&token_id);
+            let _ = whitelisted_tokens_mapper.swap_remove(&token_id);
         }
     }
 
