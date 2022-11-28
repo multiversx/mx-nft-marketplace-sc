@@ -84,6 +84,11 @@ fn bid_sft_sell_one_by_one_multiple_go() {
 }
 
 #[test]
+fn bid_with_token_whitelist_go() {
+    elrond_wasm_debug::mandos_go("mandos/bid_with_token_whitelist.scen.json");
+}
+
+#[test]
 fn buy_sft_sell_one_by_one_second_go() {
     elrond_wasm_debug::mandos_go("mandos/buy_sft_sell_one_by_one_second.scen.json");
 }

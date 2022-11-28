@@ -7,6 +7,7 @@
 elrond_wasm_node::wasm_endpoints! {
     esdt_nft_marketplace
     (
+        addTokensToWhitelist
         auctionToken
         bid
         buySft
@@ -16,8 +17,10 @@ elrond_wasm_node::wasm_endpoints! {
         getFullAuctionData
         getLastValidAuctionId
         getMarketplaceCutPercentage
+        getWhitelistedTokens
         isPaused
         pause
+        removeTokensFromWhitelist
         setCutPercentage
         unpause
         withdraw
