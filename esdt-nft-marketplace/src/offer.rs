@@ -45,6 +45,7 @@ pub trait OfferModule:
         );
         require!(deadline > current_time, "Deadline can't be in the past!");
 
+        self.require_token_whitelisted(&payment.token_identifier);
         self.check_nft_in_marketplace(
             &desired_nft_id,
             desired_nft_nonce,
