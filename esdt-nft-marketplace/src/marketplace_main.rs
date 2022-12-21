@@ -10,6 +10,7 @@ pub mod common_util_functions;
 pub mod events;
 pub mod offer;
 pub mod token_distribution;
+pub mod token_whitelist;
 
 #[elrond_wasm::contract]
 pub trait EsdtNftMarketplace:
@@ -17,13 +18,19 @@ pub trait EsdtNftMarketplace:
     + offer::OfferModule
     + bidding::BiddingModule
     + token_distribution::TokenDistributionModule
+    + token_whitelist::TokenWhitelistModule
     + events::EventsModule
     + common_util_functions::CommonUtilFunctions
     + elrond_wasm_modules::pause::PauseModule
 {
     #[init]
-    fn init(&self, bid_cut_percentage: u64) {
+    fn init(
+        &self,
+        bid_cut_percentage: u64,
+        tokens_to_whitelist: MultiValueEncoded<EgldOrEsdtTokenIdentifier>,
+    ) {
         self.try_set_bid_cut_percentage(bid_cut_percentage);
+        self.add_tokens_to_whitelist(tokens_to_whitelist);
     }
 
     #[only_owner]

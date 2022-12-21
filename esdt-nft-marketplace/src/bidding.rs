@@ -7,6 +7,7 @@ pub trait BiddingModule:
     crate::auction::AuctionModule
     + crate::events::EventsModule
     + crate::token_distribution::TokenDistributionModule
+    + crate::token_whitelist::TokenWhitelistModule
     + crate::common_util_functions::CommonUtilFunctions
     + elrond_wasm_modules::pause::PauseModule
 {

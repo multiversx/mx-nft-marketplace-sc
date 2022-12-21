@@ -35,6 +35,7 @@ pub enum AuctionType {
 #[elrond_wasm::module]
 pub trait AuctionModule:
     crate::token_distribution::TokenDistributionModule
+    + crate::token_whitelist::TokenWhitelistModule
     + crate::events::EventsModule
     + crate::common_util_functions::CommonUtilFunctions
     + elrond_wasm_modules::pause::PauseModule
@@ -106,6 +107,7 @@ pub trait AuctionModule:
             OptionalValue::None => BigUint::zero(),
         };
 
+        self.require_token_whitelisted(&accepted_payment_token);
         let accepted_payment_nft_nonce = if accepted_payment_token.is_egld() {
             0
         } else {
