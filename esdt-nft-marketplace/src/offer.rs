@@ -14,6 +14,7 @@ pub struct Offer<M: ManagedTypeApi> {
 pub trait OfferModule:
     crate::auction::AuctionModule
     + crate::token_distribution::TokenDistributionModule
+    + crate::token_whitelist::TokenWhitelistModule
     + crate::events::EventsModule
     + crate::common_util_functions::CommonUtilFunctions
     + elrond_wasm_modules::pause::PauseModule
