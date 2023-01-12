@@ -1,0 +1,121 @@
+{
+    "name": "offer token",
+    "gasSchedule": "v4",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "init.scen.json"
+        },
+        {
+            "step": "setState",
+            "comment": "set current block timestamp",
+            "currentBlockInfo": {
+                "blockTimestamp": "123,000"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "offer token error",
+            "tx": {
+                "from": "address:first_bidder",
+                "to": "sc:marketplace",
+                "value": "10",
+                "function": "sendOffer",
+                "arguments": [
+                    "str:NFT-123456",
+                    "1",
+                    "1",
+                    "123,000",
+                    "0"
+                ],
+                "gasLimit": "15,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "4",
+                "message": "str:Deadline can't be in the past!",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "offer token success",
+            "tx": {
+                "from": "address:first_bidder",
+                "to": "sc:marketplace",
+                "value": "10",
+                "function": "sendOffer",
+                "arguments": [
+                    "str:NFT-123456",
+                    "1",
+                    "1",
+                    "125,000"
+                ],
+                "gasLimit": "15,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [ "1" ],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:seller": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
+                        "str:NFT-123456": {
+                            "instances": [
+                                {
+                                    "nonce": "1",
+                                    "balance": "1",
+                                    "creator": "address:nft_creator",
+                                    "royalties": "2000"
+                                }
+                            ]
+                        },
+                        "str:SFT-123456": {
+                            "instances": [
+                                {
+                                    "nonce": "1",
+                                    "balance": "10",
+                                    "creator": "address:nft_creator",
+                                    "royalties": "2000"
+                                }
+                            ]
+                        }
+                    },
+                    "storage": {}
+                },
+                "address:first_bidder": {
+                    "nonce": "2",
+                    "balance": "990",
+                    "storage": {}
+                },
+                "sc:marketplace": {
+                    "nonce": "0",
+                    "balance": "10",
+                    "storage": {
+                        "str:bidCutPercentage": "1000",
+                        "str:lastValidOfferId": "1",
+                        "str:offerById|u64:1": {
+                            "01-offer_token": "nested:str:NFT-123456|u64:1|biguint:1",
+                            "01-payment": "nested:str:EGLD|u64:0|biguint:10",
+                            "04-start_time": "u64:123,000",
+                            "05-deadline": "u64:125,000",
+                            "06-offer_owner": "address:first_bidder"
+                        }
+                    },
+                    "code": "file:../output/esdt-nft-marketplace.wasm"
+                },
+                "+": {}
+            }
+        }
+    ]
+}
