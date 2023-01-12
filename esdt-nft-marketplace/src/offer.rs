@@ -63,8 +63,9 @@ pub trait OfferModule:
             offer_owner: caller,
         };
 
-        let offer_id = self.last_valid_offer_id().get() + 1;
-        self.last_valid_offer_id().set(offer_id);
+        let last_id_mapper = self.last_valid_offer_id();
+        let offer_id = last_id_mapper.get() + 1;
+        last_id_mapper.set(offer_id);
         self.offer_by_id(offer_id).set(&offer);
 
         self.emit_offer_token_event(offer_id, offer);
@@ -83,22 +84,24 @@ pub trait OfferModule:
             &EgldOrEsdtTokenIdentifier::esdt(desired_nft_id.clone()),
             desired_nft_nonce,
         );
-        if &token_amount_in_marketplace >= desired_amount {
-            match opt_auction_id {
-                OptionalValue::Some(auction_id) => {
-                    let auction = self.try_get_auction(auction_id);
-                    require!(
-                        &auction.auctioned_tokens.token_identifier == desired_nft_id,
-                        "The auction does not contain the NFT"
-                    );
-                    require!(
-                        auction.current_bid == BigUint::zero(),
-                        "NFT auction has active bids"
-                    );
-                }
-                OptionalValue::None => sc_panic!("Must provide the auction id"),
-            };
+
+        if &token_amount_in_marketplace < desired_amount {
+            return;
         }
+        require!(
+            opt_auction_id.clone().into_option().is_some(),
+            "Must provide the auction id"
+        );
+        let auction_id = unsafe { opt_auction_id.into_option().unwrap_unchecked() };
+        let auction = self.try_get_auction(auction_id);
+        require!(
+            &auction.auctioned_tokens.token_identifier == desired_nft_id,
+            "The auction does not contain the NFT"
+        );
+        require!(
+            auction.current_bid == BigUint::zero(),
+            "NFT auction has active bids"
+        );
     }
 
     #[endpoint(withdrawOffer)]
