@@ -32,17 +32,17 @@ pub trait TokenDistributionModule:
             let amount = self
                 .claimable_amount(&caller, &token_id, token_nonce)
                 .take();
-
-            if amount > 0 {
-                if token_id.is_egld() {
-                    egld_payment_amount = amount;
-                } else {
-                    output_payments.push(EsdtTokenPayment::new(
-                        token_id.unwrap_esdt(),
-                        token_nonce,
-                        amount,
-                    ));
-                }
+            if amount == 0 {
+                continue;
+            }
+            if token_id.is_egld() {
+                egld_payment_amount = amount;
+            } else {
+                output_payments.push(EsdtTokenPayment::new(
+                    token_id.unwrap_esdt(),
+                    token_nonce,
+                    amount,
+                ));
             }
         }
 
