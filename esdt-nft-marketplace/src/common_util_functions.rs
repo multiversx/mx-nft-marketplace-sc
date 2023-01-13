@@ -9,8 +9,4 @@ pub trait CommonUtilFunctions: elrond_wasm_modules::pause::PauseModule {
             nft_nonce,
         )
     }
-
-    fn require_not_paused(&self) {
-        require!(self.not_paused(), "Marketplace is paused");
-    }
 }

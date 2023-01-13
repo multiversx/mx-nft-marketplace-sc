@@ -9,10 +9,10 @@ publish = false
 path = "src/lib.rs"
 
 [dependencies.elrond-wasm]
-version = "0.33.0"
+version = "0.38.0"
 
 [dependencies.esdt-nft-marketplace]
 path = "../esdt-nft-marketplace"
 
 [dev-dependencies.elrond-wasm-debug]
-version = "0.33.0"
+version = "0.38.0"
