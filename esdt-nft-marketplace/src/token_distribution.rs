@@ -29,12 +29,11 @@ pub trait TokenDistributionModule:
 
         for pair in token_nonce_pairs {
             let (token_id, token_nonce) = pair.into_tuple();
-            let amount_mapper = self.claimable_amount(&caller, &token_id, token_nonce);
-            let amount = amount_mapper.get();
+            let amount = self
+                .claimable_amount(&caller, &token_id, token_nonce)
+                .take();
 
             if amount > 0 {
-                amount_mapper.clear();
-
                 if token_id.is_egld() {
                     egld_payment_amount = amount;
                 } else {
