@@ -20,9 +20,10 @@ pub trait Adder {
         let mut token_nonce_pairs = MultiValueEncoded::new();
         token_nonce_pairs.push(MultiValue2::from((token_id, token_nonce)));
 
-        self.market_proxy(marketplace_sc_address)
+        let _: IgnoreValue = self
+            .market_proxy(marketplace_sc_address)
             .claim_tokens(caller, token_nonce_pairs)
-            .execute_on_dest_context_ignore_result();
+            .execute_on_dest_context();
     }
 
     #[proxy]
