@@ -1,6 +1,6 @@
 #![no_std]
 
-elrond_wasm::imports!();
+multiversx_sc::imports!();
 
 use crate::auction::PERCENTAGE_TOTAL;
 
@@ -12,7 +12,7 @@ pub mod offer;
 pub mod token_distribution;
 pub mod token_whitelist;
 
-#[elrond_wasm::contract]
+#[multiversx_sc::contract]
 pub trait EsdtNftMarketplace:
     auction::AuctionModule
     + offer::OfferModule
@@ -21,7 +21,7 @@ pub trait EsdtNftMarketplace:
     + token_whitelist::TokenWhitelistModule
     + events::EventsModule
     + common_util_functions::CommonUtilFunctions
-    + elrond_wasm_modules::pause::PauseModule
+    + multiversx_sc_modules::pause::PauseModule
 {
     #[init]
     fn init(

@@ -1,5 +1,5 @@
-elrond_wasm::imports!();
-elrond_wasm::derive_imports!();
+multiversx_sc::imports!();
+multiversx_sc::derive_imports!();
 
 pub const PERCENTAGE_TOTAL: u64 = 10_000; // 100%
 pub const NFT_AMOUNT: u32 = 1; // Token has to be unique to be considered NFT
@@ -32,13 +32,13 @@ pub enum AuctionType {
     SftOnePerPayment,
 }
 
-#[elrond_wasm::module]
+#[multiversx_sc::module]
 pub trait AuctionModule:
     crate::token_distribution::TokenDistributionModule
     + crate::token_whitelist::TokenWhitelistModule
     + crate::events::EventsModule
     + crate::common_util_functions::CommonUtilFunctions
-    + elrond_wasm_modules::pause::PauseModule
+    + multiversx_sc_modules::pause::PauseModule
 {
     #[payable("*")]
     #[endpoint(auctionToken)]
