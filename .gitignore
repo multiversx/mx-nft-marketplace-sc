@@ -23,11 +23,11 @@ examples-wasm.zip
 
 tags
 
-# Elrond IDE
+# MultiversX IDE
 **/node_modules
 **/output/**
 **/testnet/**
-**/erdpy.data-storage.json
+**/mxpy.data-storage.json
 **/*.interaction.json
 
 # Python scripts
