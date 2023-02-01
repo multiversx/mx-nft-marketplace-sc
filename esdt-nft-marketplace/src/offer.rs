@@ -1,5 +1,5 @@
-elrond_wasm::imports!();
-elrond_wasm::derive_imports!();
+multiversx_sc::imports!();
+multiversx_sc::derive_imports!();
 
 #[derive(TopEncode, TopDecode, TypeAbi)]
 pub struct Offer<M: ManagedTypeApi> {
@@ -10,14 +10,14 @@ pub struct Offer<M: ManagedTypeApi> {
     pub offer_owner: ManagedAddress<M>,
 }
 
-#[elrond_wasm::module]
+#[multiversx_sc::module]
 pub trait OfferModule:
     crate::auction::AuctionModule
     + crate::token_distribution::TokenDistributionModule
     + crate::token_whitelist::TokenWhitelistModule
     + crate::events::EventsModule
     + crate::common_util_functions::CommonUtilFunctions
-    + elrond_wasm_modules::pause::PauseModule
+    + multiversx_sc_modules::pause::PauseModule
 {
     #[payable("*")]
     #[endpoint(sendOffer)]

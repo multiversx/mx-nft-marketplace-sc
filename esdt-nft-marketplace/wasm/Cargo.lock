@@ -4,11 +4,11 @@ version = 3
 
 [[package]]
 name = "ahash"
-version = "0.7.6"
+version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fcb51a0695d8f838b1ee009b3fbf66bda078cd64590202a864a8f3e8c4315c47"
+checksum = "2c99f64d1e06488f620f932677e24bc6e2897582980441ae90a671415bd7ec2f"
 dependencies = [
- "getrandom",
+ "cfg-if 1.0.0",
  "once_cell",
  "version_check",
 ]
@@ -44,85 +44,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
-name = "elrond-codec"
-version = "0.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "464f138aad7a8f8605ee709793863989b46d050f444bf65c4dc9f4bb481e1425"
-dependencies = [
- "arrayvec",
- "elrond-codec-derive",
- "wee_alloc",
-]
-
-[[package]]
-name = "elrond-codec-derive"
-version = "0.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "307ece5b7a6347c517a02f7c3d6fc40d516bbc2d5b2fe0468a1cb2bb4b36403e"
-dependencies = [
- "hex",
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "elrond-wasm"
-version = "0.38.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce51a244a7dffb88af6426fbdf38d037750053e07269fec32f0b99b56c45f0ac"
-dependencies = [
- "bitflags",
- "elrond-codec",
- "elrond-wasm-derive",
- "hashbrown",
- "hex-literal",
- "num-traits",
- "wee_alloc",
-]
-
-[[package]]
-name = "elrond-wasm-derive"
-version = "0.38.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5b597e6a65aa96fdb2d6ed46c9d9fd1c224b857f4933022f89ab5ef5ada4f2ed"
-dependencies = [
- "hex",
- "proc-macro2",
- "quote",
- "radix_trie",
- "syn",
-]
-
-[[package]]
-name = "elrond-wasm-modules"
-version = "0.38.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a6d4dd2365a587179ad2f6ac32943433e3ba1b5da41d56b73b4d50b78ad78cd"
-dependencies = [
- "elrond-wasm",
-]
-
-[[package]]
-name = "elrond-wasm-node"
-version = "0.38.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "daa830e234e3970f453d3a650d2980483f3abba26ca7f884b6bc035bbe5be571"
-dependencies = [
- "elrond-wasm",
-]
-
-[[package]]
-name = "elrond-wasm-output"
-version = "0.38.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7bc44ada94a25dcb60b6eb51bb5bd021eb5fd87a3d21d96ece51d7faf5c438b7"
-dependencies = [
- "elrond-wasm-node",
- "wee_alloc",
-]
-
-[[package]]
 name = "endian-type"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -132,35 +53,23 @@ checksum = "c34f04666d835ff5d62e058c3995147c06f42fe86ff053337632bca83e42702d"
 name = "esdt-nft-marketplace"
 version = "0.0.0"
 dependencies = [
- "elrond-wasm",
- "elrond-wasm-modules",
+ "multiversx-sc",
+ "multiversx-sc-modules",
 ]
 
 [[package]]
 name = "esdt-nft-marketplace-wasm"
 version = "0.0.0"
 dependencies = [
- "elrond-wasm-node",
- "elrond-wasm-output",
  "esdt-nft-marketplace",
-]
-
-[[package]]
-name = "getrandom"
-version = "0.2.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c05aeb6a22b8f62540c194aac980f2115af067bfe15a0734d7277a768d396b31"
-dependencies = [
- "cfg-if 1.0.0",
- "libc",
- "wasi",
+ "multiversx-sc-wasm-adapter",
 ]
 
 [[package]]
 name = "hashbrown"
-version = "0.11.2"
+version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab5ef0d4909ef3724cc8cce6ccc8572c5c817592e9285f5464f8e86f8bd3726e"
+checksum = "43a3c133739dddd0d2990f9a4bdf8eb4b21ef50e4851ca85ab661199821d510e"
 dependencies = [
  "ahash",
 ]
@@ -190,10 +99,82 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8452105ba047068f40ff7093dd1d9da90898e63dd61736462e9cdda6a90ad3c3"
 
 [[package]]
-name = "nibble_vec"
-version = "0.0.4"
+name = "multiversx-sc"
+version = "0.39.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c8d77f3db4bce033f4d04db08079b2ef1c3d02b44e86f25d08886fafa7756ffa"
+checksum = "ecfb3e03ac6e08114963a54e15a3c78c28e57cc0e31836e870450b35085bdf8d"
+dependencies = [
+ "bitflags",
+ "hashbrown",
+ "hex-literal",
+ "multiversx-sc-codec",
+ "multiversx-sc-derive",
+ "num-traits",
+]
+
+[[package]]
+name = "multiversx-sc-codec"
+version = "0.17.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e7638cb46a0e99c636fd55443ac534ff0a5fad0bd772e1037fbac9a75e04c3c9"
+dependencies = [
+ "arrayvec",
+ "multiversx-sc-codec-derive",
+ "wee_alloc",
+]
+
+[[package]]
+name = "multiversx-sc-codec-derive"
+version = "0.17.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e976002d51367f16140929c10ee695f95dd8d34c150a45db60d3fcd1328a267a"
+dependencies = [
+ "hex",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "multiversx-sc-derive"
+version = "0.39.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b6eb54a7d452eb09f5de159ee9b4d1fb9ec79cf49f1602ebd3efc8532015a4ea"
+dependencies = [
+ "hex",
+ "proc-macro2",
+ "quote",
+ "radix_trie",
+ "syn",
+]
+
+[[package]]
+name = "multiversx-sc-modules"
+version = "0.39.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f12284a3e31c0852b6ca0ce8306d3f404c3712b996a05ed78e97e765c98461f3"
+dependencies = [
+ "multiversx-sc",
+]
+
+[[package]]
+name = "multiversx-sc-wasm-adapter"
+version = "0.39.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ee69fa831cdd5a7ea1aedbb6356a55792b821396f48360a6194f4131eddd1045"
+dependencies = [
+ "multiversx-sc",
+ "wee_alloc",
+]
+
+[[package]]
+name = "nibble_vec"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77a5d83df9f36fe23f0c3648c6bbb8b0298bb5f1939c8f2704431371f4b84d43"
+dependencies = [
+ "smallvec",
+]
 
 [[package]]
 name = "num-traits"
@@ -230,13 +211,19 @@ dependencies = [
 
 [[package]]
 name = "radix_trie"
-version = "0.1.6"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d3681b28cd95acfb0560ea9441f82d6a4504fa3b15b97bd7b6e952131820e95"
+checksum = "c069c179fcdc6a2fe24d8d18305cf085fdbd4f922c041943e203685d6a1c58fd"
 dependencies = [
  "endian-type",
  "nibble_vec",
 ]
+
+[[package]]
+name = "smallvec"
+version = "1.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a507befe795404456341dfab10cef66ead4c041f62b8b11bbb92bffe5d0953e0"
 
 [[package]]
 name = "syn"
@@ -260,12 +247,6 @@ name = "version_check"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
-
-[[package]]
-name = "wasi"
-version = "0.11.0+wasi-snapshot-preview1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
 
 [[package]]
 name = "wee_alloc"

@@ -1,18 +1,16 @@
 [package]
 name = "seller-contract-mock"
 version = "0.0.0"
-authors = ["Dorin Iancu <dorin.iancu@elrond.com>"]
+authors = ["Dorin Iancu <dorin.iancu@multiversx.com>"]
 edition = "2018"
 publish = false
 
 [lib]
 path = "src/lib.rs"
-
-[dependencies.elrond-wasm]
-version = "0.38.0"
+[dependencies.multiversx-sc]
+version = "0.39.4"
 
 [dependencies.esdt-nft-marketplace]
 path = "../esdt-nft-marketplace"
-
-[dev-dependencies.elrond-wasm-debug]
-version = "0.38.0"
+[dev-dependencies.multiversx-sc-scenario]
+version = "0.39.4"

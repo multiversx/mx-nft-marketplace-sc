@@ -1,7 +1,7 @@
-elrond_wasm::imports!();
+multiversx_sc::imports!();
 
-#[elrond_wasm::module]
-pub trait CommonUtilFunctions: elrond_wasm_modules::pause::PauseModule {
+#[multiversx_sc::module]
+pub trait CommonUtilFunctions: multiversx_sc_modules::pause::PauseModule {
     fn get_nft_info(&self, nft_type: &TokenIdentifier, nft_nonce: u64) -> EsdtTokenData<Self::Api> {
         self.blockchain().get_esdt_token_data(
             &self.blockchain().get_sc_address(),

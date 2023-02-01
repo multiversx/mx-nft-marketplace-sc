@@ -1,15 +1,15 @@
-elrond_wasm::imports!();
+multiversx_sc::imports!();
 
 use crate::auction::{Auction, AuctionType, NFT_AMOUNT};
 
-#[elrond_wasm::module]
+#[multiversx_sc::module]
 pub trait BiddingModule:
     crate::auction::AuctionModule
     + crate::events::EventsModule
     + crate::token_distribution::TokenDistributionModule
     + crate::token_whitelist::TokenWhitelistModule
     + crate::common_util_functions::CommonUtilFunctions
-    + elrond_wasm_modules::pause::PauseModule
+    + multiversx_sc_modules::pause::PauseModule
 {
     #[payable("*")]
     #[endpoint]

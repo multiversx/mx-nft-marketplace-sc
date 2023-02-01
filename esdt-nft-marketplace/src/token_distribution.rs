@@ -1,4 +1,4 @@
-elrond_wasm::imports!();
+multiversx_sc::imports!();
 
 use crate::{
     auction::{Auction, AuctionType, NFT_AMOUNT, PERCENTAGE_TOTAL},
@@ -11,9 +11,9 @@ pub struct BidSplitAmounts<M: ManagedTypeApi> {
     pub seller: BigUint<M>,
 }
 
-#[elrond_wasm::module]
+#[multiversx_sc::module]
 pub trait TokenDistributionModule:
-    crate::common_util_functions::CommonUtilFunctions + elrond_wasm_modules::pause::PauseModule
+    crate::common_util_functions::CommonUtilFunctions + multiversx_sc_modules::pause::PauseModule
 {
     #[endpoint(claimTokens)]
     fn claim_tokens(

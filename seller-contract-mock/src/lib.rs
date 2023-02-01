@@ -1,10 +1,10 @@
 #![no_std]
 
-elrond_wasm::imports!();
+multiversx_sc::imports!();
 
 use esdt_nft_marketplace::token_distribution::ProxyTrait as _;
 
-#[elrond_wasm::derive::contract]
+#[multiversx_sc::derive::contract]
 pub trait Adder {
     #[init]
     fn init(&self) {}
